@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Radio - Online Radio Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Star Radio Logo" class="logo">
+                <h1>Star Radio</h1>
+                <p class="tagline">Your Favorite Online Radio Station</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Album Art -->
+            <div class="album-art-section">
+                <div class="album-art-container">
+                    <div id="album-art" class="album-art"></div>
+                    <script src="https://embed.radio.co/embed/s8024d04b5/artwork.js"></script>
+                </div>
+            </div>
+
+            <!-- Now Playing -->
+            <div class="now-playing-section">
+                <div class="track-info">
+                    <div class="track-label">Now Playing</div>
+                    <div id="current-song" class="song-title">
+                        <script src="https://embed.radio.co/embed/s8024d04b5/song.js"></script>
+                    </div>
+                </div>
+
+                <div class="track-info">
+                    <div class="track-label">Next Track</div>
+                    <div id="next-song" class="song-title">
+                        <script src="https://embed.radio.co/embed/s8024d04b5/next.js"></script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Controls -->
+            <div class="player-section">
+                <audio id="audio-player" crossorigin="anonymous">
+                    <source src="https://streamer.radio.co/s8024d04b5/listen" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+
+                <div class="player-controls">
+                    <button id="play-btn" class="btn-play" title="Play">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button id="pause-btn" class="btn-pause" title="Pause" style="display: none;">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                </div>
+
+                <div class="volume-section">
+                    <i class="fas fa-volume-up"></i>
+                    <input type="range" id="volume-slider" min="0" max="100" value="70" class="volume-slider">
+                </div>
+            </div>
+
+            <!-- Stream Info -->
+            <div class="stream-info">
+                <div class="info-item">
+                    <i class="fas fa-music"></i>
+                    <span>128 kbps MP3</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-signal"></i>
+                    <span id="connection-status" class="status-text">Ready to stream</span>
+                </div>
+            </div>
+
+            <!-- Social Media -->
+            <div class="social-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#" title="Facebook" class="social-btn">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#" title="Twitter" class="social-btn">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" title="Instagram" class="social-btn">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" title="YouTube" class="social-btn">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Star Radio. All rights reserved.</p>
+            <p>Stream Quality: 128 kbps MP3</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
