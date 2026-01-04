@@ -18,17 +18,13 @@
         }
 
         /* Animation for Stars Background */
-        .stars, .twinkling {
+        .stars {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             display: block;
-        }
-        
-        .stars {
-            background: #000 url('https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/ajax-loader.gif') repeat top center; 
             z-index: -2;
             opacity: 0.2; 
             background: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
@@ -47,8 +43,8 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* Artwork Styling */
-        #artwork-display {
+        /* Artwork Styling - Targeting the IMG injected by script */
+        #artwork-container img {
             width: 100%;
             max-width: 300px;
             height: auto;
@@ -61,7 +57,7 @@
             transition: transform 0.5s ease;
         }
         
-        .is-playing #artwork-display {
+        .is-playing #artwork-container img {
             animation: pulse-art 2s infinite;
         }
 
@@ -174,32 +170,32 @@
             <div class="text-xs text-gray-400 font-light">128kbps</div>
         </div>
 
-        <!-- Album Art Area (Modified for Dynamic Updates) -->
+        <!-- Album Art Area (Using Original Script) -->
         <div id="artwork-wrapper" class="w-full flex items-center justify-center relative my-4">
              <div id="artwork-container" class="w-full flex justify-center">
-                 <!-- Default / Placeholder Image -->
-                 <img id="artwork-display" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Album Art">
+                 <script src="https://embed.radio.co/embed/s8024d04b5/artwork.js"></script>
              </div>
         </div>
 
-        <!-- Song Info -->
+        <!-- Song Info (Using Original Scripts + Marquee) -->
         <div class="text-center w-full space-y-3 px-2">
-            <!-- Current Song Title (Marquee) -->
+            
+            <!-- Current Song Title -->
             <div class="w-full h-10 relative song-title-wrapper">
                 <div class="marquee-container absolute inset-0 flex items-center">
-                    <h2 id="current-song-title" class="text-2xl md:text-3xl font-bold marquee-content text-white">
-                        Star Radio
+                    <h2 class="text-2xl md:text-3xl font-bold marquee-content text-white">
+                        <script src="https://embed.radio.co/embed/s8024d04b5/song.js"></script>
                     </h2>
                 </div>
             </div>
             
-            <!-- Next Song (Marquee inside Badge) -->
+            <!-- Next Song -->
             <div class="flex items-center justify-center mx-auto w-full max-w-[80%]">
                 <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1 px-3 rounded-full w-full border border-white/5 overflow-hidden">
                     <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
                     <div class="marquee-container w-full h-6 flex items-center">
-                        <span id="next-song-title" class="marquee-content" style="animation-duration: 12s;">
-                            ...
+                        <span class="marquee-content" style="animation-duration: 12s;">
+                            <script src="https://embed.radio.co/embed/s8024d04b5/next.js"></script>
                         </span>
                     </div>
                 </div>
@@ -209,7 +205,7 @@
         <!-- Audio Player Controls -->
         <div class="w-full flex flex-col items-center gap-6 mt-4">
             
-            <!-- Hidden Native Audio Element -->
+            <!-- Audio Element -->
             <audio id="radio-player" preload="none" crossorigin="anonymous">
                 Browser ของคุณไม่รองรับการเล่นเสียง
             </audio>
@@ -265,114 +261,63 @@
             const volumeSlider = document.getElementById('volume-slider');
             const mainContainer = document.querySelector('.glass-panel');
             
-            // Elements for metadata updates
-            const currentSongEl = document.getElementById('current-song-title');
-            const nextSongEl = document.getElementById('next-song-title');
-            const artworkImgEl = document.getElementById('artwork-display');
-
-            // Config
             const streamUrl = "https://streamer.radio.co/s8024d04b5/listen";
-            const stationId = "s8024d04b5";
+            const statusApiUrl = "https://public.radio.co/stations/s8024d04b5/status";
             const defaultArtwork = "https://i.postimg.cc/8cBPtCd1/logo-new.png";
 
             let isPlaying = false;
-            let currentMetadata = {
-                title: "Star Radio",
-                artist: "Online Station",
-                artwork: defaultArtwork
-            };
 
-            // --- 1. MEDIA SESSION API SETUP (Notification & Lock Screen) ---
-            function updateMediaSession() {
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.metadata = new MediaMetadata({
-                        title: currentMetadata.title,
-                        artist: currentMetadata.artist,
-                        album: "Star Radio Live",
-                        artwork: [
-                            { src: currentMetadata.artwork, sizes: '512x512', type: 'image/jpeg' },
-                            { src: currentMetadata.artwork, sizes: '96x96', type: 'image/jpeg' }
-                        ]
-                    });
-
-                    // Action Handlers
-                    navigator.mediaSession.setActionHandler('play', togglePlay);
-                    navigator.mediaSession.setActionHandler('pause', togglePlay);
-                }
-            }
-
-            // --- 2. DATA FETCHING (Polling) ---
-            // We fetch the JS files directly as text and parse them to simulate "real-time" updates
-            async function fetchStationData() {
+            // --- 1. NOTIFICATION SYSTEM (Background Logic Only) ---
+            // This does NOT update the UI (Scripts do that). It only updates the phone's notification center.
+            async function updateNotificationData() {
                 try {
-                    // Fetch Song Title
-                    const songRes = await fetch(`https://embed.radio.co/embed/${stationId}/song.js?t=${Date.now()}`);
-                    const songText = await songRes.text();
-                    // Extract text inside document.write('...')
-                    const songMatch = songText.match(/document\.write\('(.*)'\)/);
-                    const fullSongName = songMatch ? songMatch[1] : "Star Radio";
+                    const response = await fetch(statusApiUrl);
+                    if (!response.ok) return; // Silent fail
+                    const data = await response.json();
                     
-                    // Fetch Next Song
-                    const nextRes = await fetch(`https://embed.radio.co/embed/${stationId}/next.js?t=${Date.now()}`);
-                    const nextText = await nextRes.text();
-                    const nextMatch = nextText.match(/document\.write\('(.*)'\)/);
-                    const nextSongName = nextMatch ? nextMatch[1] : "...";
-
-                    // Fetch Artwork HTML
-                    const artRes = await fetch(`https://embed.radio.co/embed/${stationId}/artwork.js?t=${Date.now()}`);
-                    const artText = await artRes.text();
-                    // Extract src inside <img src="...">
-                    const artMatch = artText.match(/src=\\"([^"]+)\\"/) || artText.match(/src="([^"]+)"/);
-                    let artworkUrl = artMatch ? artMatch[1] : defaultArtwork;
+                    const track = data.current_track || {};
+                    const fullTitle = track.title || "Star Radio";
+                    let artworkUrl = track.artwork_url || track.artwork_url_large || defaultArtwork;
                     
-                    // Handle broken artwork links
-                    if (!artworkUrl || artworkUrl.includes('undefined')) artworkUrl = defaultArtwork;
+                    if (!artworkUrl || artworkUrl === 'null') artworkUrl = defaultArtwork;
 
-                    // Update UI
-                    currentSongEl.textContent = fullSongName;
-                    nextSongEl.textContent = nextSongName;
-                    
-                    // Only update image if changed to prevent flickering
-                    if (artworkImgEl.src !== artworkUrl) {
-                        artworkImgEl.src = artworkUrl;
-                    }
-
-                    // Parse Title/Artist for Notification
-                    // Assuming format "Artist - Title" or just "Title"
+                    // Split Artist - Title
                     let artist = "Star Radio";
-                    let title = fullSongName;
-                    
-                    if (fullSongName.includes(" - ")) {
-                        const parts = fullSongName.split(" - ");
+                    let title = fullTitle;
+                    if (fullTitle.includes(" - ")) {
+                        const parts = fullTitle.split(" - ");
                         artist = parts[0];
                         title = parts.slice(1).join(" - ");
                     }
 
-                    currentMetadata = { title, artist, artwork: artworkUrl };
-                    
-                    // Update Media Session only if playing or metadata changed
-                    if (isPlaying) {
-                        updateMediaSession();
+                    // Update Media Session
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.metadata = new MediaMetadata({
+                            title: title,
+                            artist: artist,
+                            album: "Star Radio Live",
+                            artwork: [
+                                { src: artworkUrl, sizes: '512x512', type: 'image/jpeg' },
+                                { src: artworkUrl, sizes: '96x96', type: 'image/jpeg' }
+                            ]
+                        });
                     }
-
-                } catch (error) {
-                    console.error("Error fetching metadata:", error);
+                } catch (e) {
+                    // console.log("Background metadata fetch failed, UI still works via script");
                 }
             }
 
-            // --- 3. PLAYER CONTROLS ---
+            // --- 2. PLAYER CONTROLS ---
             function togglePlay() {
                 if (isPlaying) {
                     player.pause();
-                    player.src = ""; // Stop buffering
+                    player.src = "";
                     isPlaying = false;
                     iconPlay.classList.remove('hidden');
                     iconPause.classList.add('hidden');
                     mainContainer.classList.remove('is-playing');
                     
-                    if ('mediaSession' in navigator) {
-                        navigator.mediaSession.playbackState = "paused";
-                    }
+                    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
                 } else {
                     player.src = streamUrl + "?nocache=" + Date.now();
                     player.play().then(() => {
@@ -381,13 +326,17 @@
                         iconPause.classList.remove('hidden');
                         mainContainer.classList.add('is-playing');
                         
-                        updateMediaSession();
+                        // Fetch metadata immediately for notification
+                        updateNotificationData();
+                        
                         if ('mediaSession' in navigator) {
                             navigator.mediaSession.playbackState = "playing";
+                            navigator.mediaSession.setActionHandler('play', togglePlay);
+                            navigator.mediaSession.setActionHandler('pause', togglePlay);
                         }
                     }).catch(error => {
                         console.error("Playback failed:", error);
-                        alert("ไม่สามารถเล่นเพลงได้ในขณะนี้");
+                        alert("กรุณากดเล่นอีกครั้ง");
                     });
                 }
             }
@@ -399,17 +348,25 @@
             });
             player.volume = 0.8;
 
-            // --- 4. INITIALIZATION ---
-            // Initial fetch
-            fetchStationData();
+            // --- 3. BACKGROUND TASKS ---
+            // Periodically update notification data (every 15s)
+            setInterval(updateNotificationData, 15000);
             
-            // Auto update every 15 seconds
-            setInterval(fetchStationData, 15000);
+            // Initial call
+            updateNotificationData();
 
-            // Handle image errors
-            artworkImgEl.onerror = function() {
-                this.src = defaultArtwork;
-            };
+            // Artwork styling fix for injected script
+            // The script injects <img> asynchronously, so we check periodically to apply styles/handlers if CSS fails
+            setInterval(() => {
+                const img = document.querySelector('#artwork-container img');
+                if (img) {
+                    img.onerror = function() { this.src = defaultArtwork; };
+                    // Ensure it looks good if script adds weird styles
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                    img.style.display = 'block';
+                }
+            }, 2000);
         });
     </script>
 </body>
