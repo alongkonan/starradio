@@ -3,206 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Star Radio - สถานีวิทยุออนไลน์ | ฟังเพลง 24/7</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Star Radio" class="nav-logo-img">
-                <span>Star Radio</span>
-            </div>
-            <ul class="nav-menu">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#now-playing">Listen</a></li>
-                <li><a href="#featured">Featured</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </div>
-    </nav>
+    <title>Star Radio - Online Station</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Kanit (Thai) -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #0f172a;
+            color: white;
+            overflow-x: hidden;
+        }
 
-    <!-- Hero Section -->
-    <div class="hero-section" id="home">
-        <div class="hero-content">
-            <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Star Radio Logo" class="hero-logo">
-            <h1>Star Radio</h1>
-            <p class="hero-tagline">All the Hits 24/7 | ฟังเพลงฮิตตลอดวัน</p>
-            <p class="hero-subtitle">สถานีวิทยุเพลงฮิตออนไลน์ที่ดีที่สุด</p>
+        /* Animation for Stars Background */
+        .stars, .twinkling {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .stars {
+            background: #000 url('https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/ajax-loader.gif') repeat top center; 
+            z-index: -2;
+            opacity: 0.2; 
+            /* Using a simple noise texture or just dots via radial gradient is better for performance, 
+               but here we use CSS gradients for a star effect */
+            background: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+        }
+
+        /* Glassmorphism Card */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Artwork Styling Override - The script outputs an img tag, we need to style it */
+        #artwork-container img {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            margin: 0 auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        
+        .is-playing #artwork-container img {
+            animation: pulse-art 2s infinite;
+        }
+
+        @keyframes pulse-art {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+        }
+
+        /* Custom Range Slider */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 0 10px rgba(255,255,255,0.8);
+        }
+        
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+
+        /* Equalizer Animation */
+        .equalizer {
+            display: flex;
+            align-items: flex-end;
+            height: 20px;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .is-playing .equalizer {
+            opacity: 1;
+        }
+        .bar {
+            width: 4px;
+            background: #a855f7;
+            animation: bounce 1s infinite ease-in-out;
+        }
+        .bar:nth-child(1) { animation-duration: 0.8s; height: 40%; }
+        .bar:nth-child(2) { animation-duration: 1.1s; height: 70%; }
+        .bar:nth-child(3) { animation-duration: 0.9s; height: 50%; }
+        .bar:nth-child(4) { animation-duration: 1.2s; height: 80%; }
+        .bar:nth-child(5) { animation-duration: 0.7s; height: 60%; }
+
+        @keyframes bounce {
+            0%, 100% { height: 20%; }
+            50% { height: 100%; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center relative p-4 bg-gradient-to-br from-slate-900 via-purple-950 to-black">
+
+    <!-- Starry Background -->
+    <div class="stars"></div>
+
+    <!-- Main Player Container -->
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 md:p-8 flex flex-col items-center space-y-6 relative z-10">
+        
+        <!-- Header / Logo -->
+        <div class="w-full flex justify-between items-center mb-2">
+            <div class="flex items-center gap-2">
+                <span class="flex h-3 w-3 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                </span>
+                <span class="text-xs font-semibold tracking-widest text-red-400 uppercase">Live</span>
+            </div>
+            <!-- Logo Image -->
+            <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Star Radio Logo" class="h-12 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+            
+            <div class="text-xs text-gray-400 font-light">128kbps</div>
+        </div>
+
+        <!-- Album Art Area -->
+        <div id="artwork-wrapper" class="w-full aspect-square flex items-center justify-center relative my-4">
+             <!-- The radio.co script inserts an IMG tag here automatically. 
+                  We wrap it to control layout. -->
+             <div id="artwork-container" class="w-full flex justify-center">
+                 <script src="https://embed.radio.co/embed/s8024d04b5/artwork.js"></script>
+             </div>
+        </div>
+
+        <!-- Song Info -->
+        <div class="text-center w-full space-y-2">
+            <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-white truncate px-2">
+                <script src="https://embed.radio.co/embed/s8024d04b5/song.js"></script>
+            </h2>
+            
+            <div class="flex items-center justify-center gap-2 text-sm text-gray-300 bg-black/20 py-1 px-3 rounded-full mx-auto w-max max-w-full">
+                <span class="text-purple-400 font-semibold whitespace-nowrap">ถัดไป:</span>
+                <span class="truncate max-w-[150px] md:max-w-[200px]">
+                    <script src="https://embed.radio.co/embed/s8024d04b5/next.js"></script>
+                </span>
+            </div>
+        </div>
+
+        <!-- Audio Player Controls -->
+        <div class="w-full flex flex-col items-center gap-6 mt-4">
+            
+            <!-- Hidden Native Audio Element -->
+            <audio id="radio-player" preload="none">
+                <source src="https://streamer.radio.co/s8024d04b5/listen" type="audio/mpeg">
+                Browser ของคุณไม่รองรับการเล่นเสียง
+            </audio>
+
+            <!-- Play/Pause Button -->
+            <div class="flex items-center justify-center gap-8 w-full">
+                <!-- Visualizer (Left) -->
+                <div class="equalizer h-8 w-12 hidden md:flex">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+
+                <button id="play-btn" class="group relative flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white shadow-lg hover:shadow-purple-500/50 transition-all duration-300 transform hover:scale-105 active:scale-95">
+                    <!-- Play Icon -->
+                    <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <!-- Pause Icon (Hidden by default) -->
+                    <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 hidden" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+
+                 <!-- Visualizer (Right) -->
+                 <div class="equalizer h-8 w-12 hidden md:flex">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+            </div>
+
+            <!-- Volume Control -->
+            <div class="w-full flex items-center gap-3 px-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.8" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-xs text-gray-500 w-full border-t border-white/10 pt-4">
+            <p>&copy; 2024 Star Radio. All rights reserved.</p>
         </div>
     </div>
 
-    <!-- Main Player Section -->
-    <section class="player-main" id="now-playing">
-        <div class="container-wide">
-            <div class="player-layout">
-                <!-- Left: Album Art -->
-                <div class="player-left">
-                    <div class="album-art-container">
-                        <div id="album-art" class="album-art">
-                            <script src="https://embed.radio.co/embed/s8024d04b5/artwork.js"></script>
-                        </div>
-                    </div>
-                    <div class="audio-player-wrapper">
-                        <audio id="audio-player" crossorigin="anonymous">
-                            <source src="https://streamer.radio.co/s8024d04b5/listen" type="audio/mpeg">
-                        </audio>
-                    </div>
-                </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const player = document.getElementById('radio-player');
+            const playBtn = document.getElementById('play-btn');
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+            const volumeSlider = document.getElementById('volume-slider');
+            const mainContainer = document.querySelector('.glass-panel');
 
-                <!-- Right: Player Controls & Info -->
-                <div class="player-right">
-                    <!-- Now Playing Info -->
-                    <div class="now-playing-info">
-                        <h2>Now Playing</h2>
-                        <div class="track-display">
-                            <div id="current-song" class="song-title-large">
-                                <script src="https://embed.radio.co/embed/s8024d04b5/song.js"></script>
-                            </div>
-                        </div>
-                    </div>
+            let isPlaying = false;
 
-                    <!-- Next Track -->
-                    <div class="next-track-info">
-                        <h3>Next Track</h3>
-                        <div id="next-song" class="song-title-next">
-                            <script src="https://embed.radio.co/embed/s8024d04b5/next.js"></script>
-                        </div>
-                    </div>
+            // Toggle Play/Pause
+            playBtn.addEventListener('click', () => {
+                if (isPlaying) {
+                    player.pause();
+                    isPlaying = false;
+                    iconPlay.classList.remove('hidden');
+                    iconPause.classList.add('hidden');
+                    mainContainer.classList.remove('is-playing');
+                } else {
+                    // Start playing
+                    // Reset src to ensure live stream is current (buffer flush)
+                    const currentSrc = player.src;
+                    player.src = '';
+                    player.src = currentSrc;
+                    
+                    player.play().then(() => {
+                        isPlaying = true;
+                        iconPlay.classList.add('hidden');
+                        iconPause.classList.remove('hidden');
+                        mainContainer.classList.add('is-playing');
+                    }).catch(error => {
+                        console.error("Playback failed:", error);
+                        alert("กรุณากดเล่นอีกครั้ง");
+                    });
+                }
+            });
 
-                    <!-- Player Controls -->
-                    <div class="control-section">
-                        <button id="play-btn" class="btn-play-large" title="Play">
-                            <i class="fas fa-play"></i>
-                        </button>
-                        <button id="pause-btn" class="btn-pause-large" title="Pause" style="display: none;">
-                            <i class="fas fa-pause"></i>
-                        </button>
-                        <div class="volume-section-large">
-                            <i class="fas fa-volume-mute"></i>
-                            <input type="range" id="volume-slider" min="0" max="100" value="70" class="volume-slider-large">
-                            <i class="fas fa-volume-up"></i>
-                        </div>
-                    </div>
+            // Volume Control
+            volumeSlider.addEventListener('input', (e) => {
+                player.volume = e.target.value;
+            });
 
-                    <!-- Stream Info -->
-                    <div class="stream-quality">
-                        <div class="quality-item">
-                            <i class="fas fa-signal"></i>
-                            <div>
-                                <span class="quality-label">Status</span>
-                                <span id="connection-status" class="quality-value">Ready</span>
-                            </div>
-                        </div>
-                        <div class="quality-item">
-                            <i class="fas fa-music"></i>
-                            <div>
-                                <span class="quality-label">Quality</span>
-                                <span class="quality-value">128 kbps MP3</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+            // Set Initial Volume
+            player.volume = 0.8;
 
-    <!-- Featured Section -->
-    <section class="featured-section" id="featured">
-        <div class="container-wide">
-            <h2 class="section-title">Featured</h2>
-            <div class="featured-grid">
-                <div class="featured-card">
-                    <div class="featured-icon">
-                        <i class="fas fa-music"></i>
-                    </div>
-                    <h3>Best Hits</h3>
-                    <p>Listen to the best songs from around the world</p>
-                </div>
-                <div class="featured-card">
-                    <div class="featured-icon">
-                        <i class="fas fa-headphones"></i>
-                    </div>
-                    <h3>24/7 Stream</h3>
-                    <p>Unlimited music, unlimited entertainment</p>
-                </div>
-                <div class="featured-card">
-                    <div class="featured-icon">
-                        <i class="fas fa-play-circle"></i>
-                    </div>
-                    <h3>Live Shows</h3>
-                    <p>Catch live broadcasts and special events</p>
-                </div>
-                <div class="featured-card">
-                    <div class="featured-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <h3>Your Favorites</h3>
-                    <p>Discover and save your favorite tracks</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Social Section -->
-    <section class="social-section" id="contact">
-        <div class="container-wide">
-            <h2 class="section-title">Follow Us</h2>
-            <p class="social-subtitle">Stay connected with Star Radio</p>
-            <div class="social-links-grid">
-                <a href="#" class="social-link-btn">
-                    <i class="fab fa-facebook-f"></i>
-                    <span>Facebook</span>
-                </a>
-                <a href="#" class="social-link-btn">
-                    <i class="fab fa-twitter"></i>
-                    <span>Twitter</span>
-                </a>
-                <a href="#" class="social-link-btn">
-                    <i class="fab fa-instagram"></i>
-                    <span>Instagram</span>
-                </a>
-                <a href="#" class="social-link-btn">
-                    <i class="fab fa-youtube"></i>
-                    <span>YouTube</span>
-                </a>
-                <a href="#" class="social-link-btn">
-                    <i class="fab fa-tiktok"></i>
-                    <span>TikTok</span>
-                </a>
-                <a href="#" class="social-link-btn">
-                    <i class="fab fa-spotify"></i>
-                    <span>Spotify</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container-wide">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Star Radio</h4>
-                    <p>Your favorite online radio station</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Quality</h4>
-                    <p>128 kbps MP3 Streaming</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Hours</h4>
-                    <p>24/7 Broadcasting</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Star Radio. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script src="script.js"></script>
+            // Handle Artwork Fallback (Optional Enhancement)
+            // The embedded script renders an image, but if it fails or is empty, we could style nicely.
+            // Since script injection happens immediately, we can check later if image loaded.
+            setTimeout(() => {
+                const artworkImg = document.querySelector('#artwork-container img');
+                if (artworkImg) {
+                    // Add error handling if the dynamic image breaks
+                    artworkImg.onerror = function() {
+                        this.src = 'https://i.postimg.cc/8cBPtCd1/logo-new.png'; // Fallback to logo
+                        this.style.padding = '20px';
+                        this.style.background = 'rgba(0,0,0,0.3)';
+                    };
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
