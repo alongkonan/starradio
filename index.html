@@ -31,8 +31,6 @@
             background: #000 url('https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/ajax-loader.gif') repeat top center; 
             z-index: -2;
             opacity: 0.2; 
-            /* Using a simple noise texture or just dots via radial gradient is better for performance, 
-               but here we use CSS gradients for a star effect */
             background: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
                         radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
                         radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
@@ -49,7 +47,7 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* Artwork Styling Override - The script outputs an img tag, we need to style it */
+        /* Artwork Styling Override */
         #artwork-container img {
             width: 100%;
             max-width: 300px;
@@ -150,8 +148,6 @@
 
         <!-- Album Art Area -->
         <div id="artwork-wrapper" class="w-full aspect-square flex items-center justify-center relative my-4">
-             <!-- The radio.co script inserts an IMG tag here automatically. 
-                  We wrap it to control layout. -->
              <div id="artwork-container" class="w-full flex justify-center">
                  <script src="https://embed.radio.co/embed/s8024d04b5/artwork.js"></script>
              </div>
@@ -175,8 +171,8 @@
         <div class="w-full flex flex-col items-center gap-6 mt-4">
             
             <!-- Hidden Native Audio Element -->
-            <audio id="radio-player" preload="none">
-                <source src="https://streamer.radio.co/s8024d04b5/listen" type="audio/mpeg">
+            <!-- Changed: Moved src to attribute and removed inner source tag to fix JS manipulation issues -->
+            <audio id="radio-player" preload="none" crossorigin="anonymous">
                 Browser ของคุณไม่รองรับการเล่นเสียง
             </audio>
 
@@ -230,6 +226,9 @@
             const iconPause = document.getElementById('icon-pause');
             const volumeSlider = document.getElementById('volume-slider');
             const mainContainer = document.querySelector('.glass-panel');
+            
+            // Define the stream URL specifically
+            const streamUrl = "https://streamer.radio.co/s8024d04b5/listen";
 
             let isPlaying = false;
 
@@ -237,16 +236,16 @@
             playBtn.addEventListener('click', () => {
                 if (isPlaying) {
                     player.pause();
+                    // Optional: Reset src to stop buffering data
+                    player.src = "";
                     isPlaying = false;
                     iconPlay.classList.remove('hidden');
                     iconPause.classList.add('hidden');
                     mainContainer.classList.remove('is-playing');
                 } else {
                     // Start playing
-                    // Reset src to ensure live stream is current (buffer flush)
-                    const currentSrc = player.src;
-                    player.src = '';
-                    player.src = currentSrc;
+                    // Add timestamp to prevent caching old stream chunks
+                    player.src = streamUrl + "?nocache=" + new Date().getTime();
                     
                     player.play().then(() => {
                         isPlaying = true;
@@ -255,7 +254,7 @@
                         mainContainer.classList.add('is-playing');
                     }).catch(error => {
                         console.error("Playback failed:", error);
-                        alert("กรุณากดเล่นอีกครั้ง");
+                        alert("ไม่สามารถเล่นเพลงได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง");
                     });
                 }
             });
@@ -268,13 +267,10 @@
             // Set Initial Volume
             player.volume = 0.8;
 
-            // Handle Artwork Fallback (Optional Enhancement)
-            // The embedded script renders an image, but if it fails or is empty, we could style nicely.
-            // Since script injection happens immediately, we can check later if image loaded.
+            // Handle Artwork Fallback
             setTimeout(() => {
                 const artworkImg = document.querySelector('#artwork-container img');
                 if (artworkImg) {
-                    // Add error handling if the dynamic image breaks
                     artworkImg.onerror = function() {
                         this.src = 'https://i.postimg.cc/8cBPtCd1/logo-new.png'; // Fallback to logo
                         this.style.padding = '20px';
