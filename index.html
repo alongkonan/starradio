@@ -171,6 +171,7 @@
         </div>
 
         <!-- Album Art Area (Using Original Script) -->
+        <!-- We add an ID to the wrapper to find the image easily later -->
         <div id="artwork-wrapper" class="w-full flex items-center justify-center relative my-4">
              <div id="artwork-container" class="w-full flex justify-center">
                  <script src="https://embed.radio.co/embed/s8024d04b5/artwork.js"></script>
@@ -267,43 +268,61 @@
 
             let isPlaying = false;
 
-            // --- 1. NOTIFICATION SYSTEM (Background Logic Only) ---
-            // This does NOT update the UI (Scripts do that). It only updates the phone's notification center.
+            // --- 1. NOTIFICATION SYSTEM WITH SCREEN SCRAPING FALLBACK ---
             async function updateNotificationData() {
+                let artworkUrl = defaultArtwork;
+                let fullTitle = "Star Radio";
+                let artist = "Online Station";
+
                 try {
+                    // Step A: Try fetching from API first for Text Data
                     const response = await fetch(statusApiUrl);
-                    if (!response.ok) return; // Silent fail
-                    const data = await response.json();
-                    
-                    const track = data.current_track || {};
-                    const fullTitle = track.title || "Star Radio";
-                    let artworkUrl = track.artwork_url || track.artwork_url_large || defaultArtwork;
-                    
-                    if (!artworkUrl || artworkUrl === 'null') artworkUrl = defaultArtwork;
-
-                    // Split Artist - Title
-                    let artist = "Star Radio";
-                    let title = fullTitle;
-                    if (fullTitle.includes(" - ")) {
-                        const parts = fullTitle.split(" - ");
-                        artist = parts[0];
-                        title = parts.slice(1).join(" - ");
+                    if (response.ok) {
+                        const data = await response.json();
+                        const track = data.current_track || {};
+                        
+                        if (track.title) fullTitle = track.title;
+                        
+                        // Try to get artwork from API first
+                        if (track.artwork_url && track.artwork_url !== 'null') {
+                            artworkUrl = track.artwork_url;
+                        } else if (track.artwork_url_large && track.artwork_url_large !== 'null') {
+                            artworkUrl = track.artwork_url_large;
+                        }
                     }
+                } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                    // Update Media Session
-                    if ('mediaSession' in navigator) {
-                        navigator.mediaSession.metadata = new MediaMetadata({
-                            title: title,
-                            artist: artist,
-                            album: "Star Radio Live",
-                            artwork: [
-                                { src: artworkUrl, sizes: '512x512', type: 'image/jpeg' },
-                                { src: artworkUrl, sizes: '96x96', type: 'image/jpeg' }
-                            ]
-                        });
-                    }
-                } catch (e) {
-                    // console.log("Background metadata fetch failed, UI still works via script");
+                // Step B: CRITICAL - Check the ON-SCREEN image
+                // The script provided by the user injects an <img> tag. 
+                // We trust this visual image more than the API if the API failed to give artwork.
+                const screenImg = document.querySelector('#artwork-container img');
+                if (screenImg && screenImg.src && !screenImg.src.includes('logo-new.png') && screenImg.naturalWidth > 0) {
+                    // console.log("Using on-screen artwork for notification:", screenImg.src);
+                    artworkUrl = screenImg.src;
+                }
+
+                // Step C: Parse Artist - Title
+                let title = fullTitle;
+                if (fullTitle.includes(" - ")) {
+                    const parts = fullTitle.split(" - ");
+                    artist = parts[0];
+                    title = parts.slice(1).join(" - ");
+                } else {
+                    // Try to guess from marquee content if API failed completely? 
+                    // No, API usually has title even if artwork is missing.
+                }
+
+                // Step D: Update Media Session
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: title,
+                        artist: artist,
+                        album: "Star Radio Live",
+                        artwork: [
+                            { src: artworkUrl, sizes: '512x512', type: 'image/jpeg' },
+                            { src: artworkUrl, sizes: '96x96', type: 'image/jpeg' }
+                        ]
+                    });
                 }
             }
 
@@ -326,7 +345,7 @@
                         iconPause.classList.remove('hidden');
                         mainContainer.classList.add('is-playing');
                         
-                        // Fetch metadata immediately for notification
+                        // Immediate update
                         updateNotificationData();
                         
                         if ('mediaSession' in navigator) {
@@ -349,24 +368,31 @@
             player.volume = 0.8;
 
             // --- 3. BACKGROUND TASKS ---
-            // Periodically update notification data (every 15s)
-            setInterval(updateNotificationData, 15000);
+            // Update every 5 seconds to catch when the script updates the on-screen image
+            setInterval(updateNotificationData, 5000);
             
             // Initial call
-            updateNotificationData();
+            setTimeout(updateNotificationData, 2000); // Wait a bit for script to load
 
-            // Artwork styling fix for injected script
-            // The script injects <img> asynchronously, so we check periodically to apply styles/handlers if CSS fails
+            // --- 4. STYLE FIXER ---
+            // The script injects <img> asynchronously. We ensure it looks good.
             setInterval(() => {
                 const img = document.querySelector('#artwork-container img');
                 if (img) {
-                    img.onerror = function() { this.src = defaultArtwork; };
-                    // Ensure it looks good if script adds weird styles
-                    img.style.maxWidth = '100%';
-                    img.style.height = 'auto';
-                    img.style.display = 'block';
+                    // Prevent broken image icon
+                    img.onerror = function() { 
+                        if (this.src !== defaultArtwork) this.src = defaultArtwork; 
+                    };
+                    
+                    // Force styles
+                    if (img.style.width !== '100%') {
+                        img.style.width = '100%';
+                        img.style.height = 'auto';
+                        img.style.display = 'block';
+                        img.style.borderRadius = '1rem';
+                    }
                 }
-            }, 2000);
+            }, 1000);
         });
     </script>
 </body>
