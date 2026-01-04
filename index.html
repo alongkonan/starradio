@@ -122,20 +122,27 @@
             50% { height: 100%; }
         }
 
-        /* Marquee Text Animation */
+        /* Marquee Text Animation - Fixed */
         .marquee-container {
+            width: 100%;
             overflow: hidden;
             white-space: nowrap;
             position: relative;
-            /* Create fade effect on sides */
-            mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-            -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+            box-sizing: border-box;
         }
         
         .marquee-content {
             display: inline-block;
             animation: marquee 15s linear infinite;
-            padding-left: 100%; /* Start off-screen right */
+            padding-left: 100%; /* Start from right outside */
+            /* Ensure text is visible */
+            color: white; 
+        }
+
+        /* Specific gradient removed from text itself to ensure visibility */
+        .song-title-wrapper {
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
         }
 
         @keyframes marquee {
@@ -176,20 +183,20 @@
 
         <!-- Song Info -->
         <div class="text-center w-full space-y-3 px-2">
-            <!-- Current Song Title (Marquee) -->
-            <div class="w-full h-10 overflow-hidden relative">
-                <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-white marquee-container w-full absolute inset-0 flex items-center">
-                    <span class="marquee-content">
+            <!-- Current Song Title (Marquee) - Removed gradient text to fix visibility -->
+            <div class="w-full h-10 relative song-title-wrapper">
+                <div class="marquee-container absolute inset-0 flex items-center">
+                    <h2 class="text-2xl md:text-3xl font-bold marquee-content text-white">
                         <script src="https://embed.radio.co/embed/s8024d04b5/song.js"></script>
-                    </span>
-                </h2>
+                    </h2>
+                </div>
             </div>
             
             <!-- Next Song (Marquee inside Badge) -->
             <div class="flex items-center justify-center mx-auto w-full max-w-[80%]">
-                <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1 px-3 rounded-full w-full border border-white/5">
-                    <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0">ถัดไป:</span>
-                    <div class="marquee-container w-full">
+                <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1 px-3 rounded-full w-full border border-white/5 overflow-hidden">
+                    <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
+                    <div class="marquee-container w-full h-6 flex items-center">
                         <span class="marquee-content" style="animation-duration: 12s;">
                             <script src="https://embed.radio.co/embed/s8024d04b5/next.js"></script>
                         </span>
@@ -266,15 +273,12 @@
             playBtn.addEventListener('click', () => {
                 if (isPlaying) {
                     player.pause();
-                    // Optional: Reset src to stop buffering data
                     player.src = "";
                     isPlaying = false;
                     iconPlay.classList.remove('hidden');
                     iconPause.classList.add('hidden');
                     mainContainer.classList.remove('is-playing');
                 } else {
-                    // Start playing
-                    // Add timestamp to prevent caching old stream chunks
                     player.src = streamUrl + "?nocache=" + new Date().getTime();
                     
                     player.play().then(() => {
@@ -302,7 +306,7 @@
                 const artworkImg = document.querySelector('#artwork-container img');
                 if (artworkImg) {
                     artworkImg.onerror = function() {
-                        this.src = 'https://i.postimg.cc/8cBPtCd1/logo-new.png'; // Fallback to logo
+                        this.src = 'https://i.postimg.cc/8cBPtCd1/logo-new.png'; 
                         this.style.padding = '20px';
                         this.style.background = 'rgba(0,0,0,0.3)';
                     };
