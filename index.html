@@ -60,7 +60,7 @@
         
         /* Class สำหรับลดขนาดรูปเมื่อชื่อเพลงยาว */
         .art-shrink {
-            max-width: 220px !important; /* ปรับลดลงให้เห็นชัดขึ้น (จาก 260px) */
+            max-width: 220px !important; /* ปรับลดลงให้เห็นชัดขึ้น */
         }
         
         /* Desktop specific artwork adjustment */
@@ -161,6 +161,11 @@
             0% { transform: translate(0, 0); }
             100% { transform: translate(-100%, 0); }
         }
+        
+        /* DJ Image Transition */
+        #dj-image {
+            transition: opacity 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center relative p-4 bg-gradient-to-br from-slate-900 via-purple-950 to-black overflow-y-auto py-8 lg:py-0">
@@ -222,9 +227,9 @@
                             <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1.5 px-4 rounded-full w-full max-w-sm lg:max-w-md border border-white/5 overflow-hidden">
                                 <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
                                 <div class="marquee-container w-full h-6 flex items-center">
-                                    <!-- Dynamic Content from JS -->
-                                    <span id="next-song-display" class="marquee-content" style="animation-duration: 12s;">
-                                        Stay Tuned
+                                    <!-- Use direct script embed as requested -->
+                                    <span class="marquee-content" style="animation-duration: 12s;">
+                                        <script src="https://embed.radio.co/embed/sbf4f79825/next.js"></script>
                                     </span>
                                 </div>
                             </div>
@@ -273,23 +278,24 @@
             <div id="dj-card" class="w-full relative rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.2)] group transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] bg-gray-900">
                 <!-- Background Image -->
                 <div class="w-full aspect-[4/5] lg:aspect-[3/4] relative">
-                    <img src="https://lh3.googleusercontent.com/d/1c7-F8m-Q51qCx7oRLSa6zYhXsKKVAocA" alt="DJ KRIT" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: 50% 15%;">
+                    <!-- Default Image (will be changed by JS) -->
+                    <img id="dj-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="DJ Station" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: 50% 15%;">
                     
                     <!-- Gradient Overlay -->
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
                     
                     <!-- Status Badge -->
                     <div class="absolute top-4 right-4 z-10">
-                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
+                        <span id="dj-status-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
                     </div>
 
                     <!-- Content Overlay -->
                     <div class="absolute bottom-0 left-0 w-full p-6 flex flex-col items-start z-10">
-                        <h3 class="font-bold text-4xl text-white leading-none tracking-tight mb-2 drop-shadow-lg">DJ KRIT</h3>
+                        <h3 id="dj-name" class="font-bold text-4xl text-white leading-none tracking-tight mb-2 drop-shadow-lg">STAR RADIO</h3>
                         
                         <div class="flex items-center gap-2 mb-4">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white border border-white/10 backdrop-blur-md">HOST</span>
-                            <p class="text-lg text-purple-300 font-medium tracking-wide drop-shadow-md">SAT 09.00-15.00</p>
+                            <p id="dj-time" class="text-lg text-purple-300 font-medium tracking-wide drop-shadow-md">Non-stop Hits</p>
                         </div>
                         
                         <div class="w-full h-[1px] bg-white/10 mb-3"></div>
@@ -320,6 +326,31 @@
             const STATION_ID = "sbf4f79825"; 
             // ---------------------------------------------
 
+            // --- DJ SCHEDULE CONFIGURATION ---
+            const djSchedule = [
+                {
+                    day: 6, // Saturday (0=Sun, 1=Mon, ..., 6=Sat)
+                    start: 9, // Start hour (24h)
+                    end: 15,  // End hour (24h)
+                    name: "DJ KRIT",
+                    timeLabel: "SAT 09.00-15.00",
+                    image: "https://lh3.googleusercontent.com/d/1c7-F8m-Q51qCx7oRLSa6zYhXsKKVAocA"
+                },
+                {
+                    day: 6, // Saturday
+                    start: 15,
+                    end: 19,
+                    name: "DJ MAN",
+                    timeLabel: "SAT 15.00-19.00",
+                    image: "https://lh3.googleusercontent.com/d/1ZQLeVFc6S4ARJwLdlcFS-yyPPwQGzV8M"
+                }
+            ];
+            const defaultDJ = {
+                name: "STAR RADIO",
+                timeLabel: "Non-stop Hits",
+                image: "https://i.postimg.cc/8cBPtCd1/logo-new.png" // Use logo or generic station image
+            };
+
             const urls = {
                 stream: `https://streaming.radio.co/${STATION_ID}/listen`,
                 status: `https://public.radio.co/stations/${STATION_ID}/status`,
@@ -336,9 +367,58 @@
             const artworkImage = document.getElementById('artwork-image');
             const trackArtistEl = document.getElementById('track-artist');
             const trackTitleEl = document.getElementById('track-title');
-            const nextSongDisplayEl = document.getElementById('next-song-display');
+            
+            // DJ Card Elements
+            const djImageEl = document.getElementById('dj-image');
+            const djNameEl = document.getElementById('dj-name');
+            const djTimeEl = document.getElementById('dj-time');
+            const djStatusBadge = document.getElementById('dj-status-badge');
 
             let isPlaying = false;
+
+            // --- DJ SCHEDULE LOGIC ---
+            function updateDJCard() {
+                const now = new Date();
+                const day = now.getDay();
+                const hour = now.getHours();
+                
+                let currentShow = null;
+
+                // Find active DJ
+                for (const show of djSchedule) {
+                    if (show.day === day && hour >= show.start && hour < show.end) {
+                        currentShow = show;
+                        break;
+                    }
+                }
+
+                // Update UI
+                if (currentShow) {
+                    // Specific DJ is On Air
+                    if (djNameEl.textContent !== currentShow.name) {
+                        djNameEl.textContent = currentShow.name;
+                        djTimeEl.textContent = currentShow.timeLabel;
+                        djImageEl.src = currentShow.image;
+                        // Style adjustment for real photos
+                        djImageEl.style.objectFit = "cover";
+                        djStatusBadge.textContent = "ON AIR";
+                        djStatusBadge.classList.remove("bg-gray-600");
+                        djStatusBadge.classList.add("bg-red-600/90", "animate-pulse");
+                    }
+                } else {
+                    // Default Station Info (Off Air)
+                    if (djNameEl.textContent !== defaultDJ.name) {
+                        djNameEl.textContent = defaultDJ.name;
+                        djTimeEl.textContent = defaultDJ.timeLabel;
+                        djImageEl.src = defaultDJ.image;
+                        // Style adjustment for logo
+                        djImageEl.style.objectFit = "contain"; 
+                        djStatusBadge.textContent = "OFF AIR";
+                        djStatusBadge.classList.remove("bg-red-600/90", "animate-pulse");
+                        djStatusBadge.classList.add("bg-gray-600");
+                    }
+                }
+            }
 
             // Error handling for the audio player
             player.addEventListener('error', function(e) {
@@ -352,49 +432,6 @@
                     alert("ไม่สามารถเชื่อมต่อสัญญาณเสียงได้ในขณะนี้");
                 }
             });
-
-            // --- HELPER: SCRAPE SCRIPT CONTENT via IFRAME (Bypass CORS) ---
-            function fetchScriptContent(url, callback) {
-                const oldIframe = document.getElementById('scraper-iframe');
-                if (oldIframe) document.body.removeChild(oldIframe);
-
-                const iframe = document.createElement('iframe');
-                iframe.id = 'scraper-iframe';
-                iframe.style.display = 'none';
-                document.body.appendChild(iframe);
-
-                const scriptSrc = `${url}?t=${Date.now()}`;
-                
-                // Add Timeout
-                const timeoutId = setTimeout(() => {
-                    if(document.body.contains(iframe)) {
-                        document.body.removeChild(iframe);
-                        // Don't callback on timeout to prevent "Loading.." flicker
-                    }
-                }, 2500); // 2.5s limit
-
-                const doc = iframe.contentWindow.document;
-                doc.open();
-                doc.write(`<html><body><script src="${scriptSrc}"><\/script></body></html>`);
-                doc.close();
-
-                iframe.onload = function() {
-                    clearTimeout(timeoutId);
-                    try {
-                        const content = iframe.contentWindow.document.body.innerText;
-                        if (content && content.trim() !== "") {
-                            let text = content.trim();
-                            // Filter unwanted text
-                            if (text.includes("Loading") || text === "...") {
-                                text = "Star Radio"; // Fallback text
-                            }
-                            callback(text);
-                        }
-                    } catch (e) {
-                        console.error("Scrape error", e);
-                    }
-                };
-            }
 
             // --- 1. DATA FETCHING ---
             async function updateTrackData() {
@@ -421,11 +458,6 @@
                     }
                 } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                // B. Fetch Next Song via Iframe Scraper
-                fetchScriptContent(urls.nextScript, (content) => {
-                    if (nextSongDisplayEl) nextSongDisplayEl.textContent = content;
-                });
-
                 // Process Title/Artist
                 if (fullTitle.includes(" - ")) {
                     const parts = fullTitle.split(" - ");
@@ -445,7 +477,7 @@
                     
                     // --- SMART RESIZE LOGIC ---
                     if (artworkImage) {
-                        // Check if title is longer than 20 chars (Reduced from 40 for responsiveness)
+                        // Check if title is longer than 20 chars
                         if (title.length > 20) {
                             artworkImage.classList.add('art-shrink');
                         } else {
@@ -523,6 +555,10 @@
             // --- 3. BACKGROUND TASKS ---
             updateTrackData(); 
             setInterval(updateTrackData, 10000); 
+            
+            // Check DJ Schedule
+            updateDJCard();
+            setInterval(updateDJCard, 60000); // Update every minute
 
             // --- 4. IMAGE ERROR HANDLING ---
             if (artworkImage) {
