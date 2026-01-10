@@ -44,7 +44,7 @@
         }
 
         /* Artwork Styling */
-        #artwork-container img {
+        #artwork-image {
             width: 100%;
             max-width: 300px;
             height: auto;
@@ -59,12 +59,12 @@
         
         /* Desktop specific artwork adjustment */
         @media (min-width: 1024px) {
-            #artwork-container img {
+            #artwork-image {
                 max-width: 280px; 
             }
         }
         
-        .is-playing #artwork-container img {
+        .is-playing #artwork-image {
             animation: pulse-art 2s infinite;
         }
 
@@ -170,7 +170,8 @@
                 <div class="w-full lg:w-auto flex-shrink-0 flex flex-col items-center">
                     <div id="artwork-wrapper" class="w-full flex justify-center lg:block">
                          <div id="artwork-container" class="flex justify-center">
-                             <script src="https://embed.radio.co/embed/sbf4f79825/artwork.js"></script>
+                             <!-- Using standard img tag now, controlled by JS -->
+                             <img id="artwork-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Album Art">
                          </div>
                     </div>
                 </div>
@@ -178,7 +179,7 @@
                 <!-- Right: Controls & Info Section -->
                 <div class="w-full flex flex-col items-center lg:items-start lg:flex-1 space-y-4">
                     
-                    <!-- Header (Desktop Only Layout Adjustment) -->
+                    <!-- Header -->
                     <div class="w-full flex justify-between items-center lg:mb-2">
                         <div class="flex items-center gap-2">
                             <span class="flex h-3 w-3 relative">
@@ -190,7 +191,7 @@
                         <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Star Radio Logo" class="h-10 lg:h-12 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
                     </div>
 
-                    <!-- Song Info (UPDATED: Static Title) -->
+                    <!-- Song Info -->
                     <div class="w-full space-y-1 lg:space-y-2">
                         
                         <!-- Artist Name -->
@@ -200,20 +201,21 @@
                             </p>
                         </div>
 
-                        <!-- Current Song Title (Static, wraps if needed) -->
+                        <!-- Current Song Title -->
                         <div class="w-full relative flex items-center justify-center lg:justify-start">
                             <h2 id="track-title" class="text-2xl md:text-4xl font-bold text-white text-center lg:text-left leading-tight line-clamp-2">
                                 Online Station
                             </h2>
                         </div>
                         
-                        <!-- Next Song (Kept Marquee for limited space badge) -->
+                        <!-- Next Song -->
                         <div class="flex items-center justify-center lg:justify-start w-full pt-2">
                             <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1.5 px-4 rounded-full w-full max-w-sm lg:max-w-md border border-white/5 overflow-hidden">
                                 <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
                                 <div class="marquee-container w-full h-6 flex items-center">
-                                    <span class="marquee-content" style="animation-duration: 12s;">
-                                        <script src="https://embed.radio.co/embed/sbf4f79825/next.js"></script>
+                                    <!-- Dynamic Content from JS -->
+                                    <span id="next-song-display" class="marquee-content" style="animation-duration: 12s;">
+                                        ...
                                     </span>
                                 </div>
                             </div>
@@ -255,19 +257,19 @@
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: Sidebar (DJ Card + Extras) -->
+        <!-- RIGHT COLUMN: Sidebar (DJ Card) -->
         <div class="col-span-12 lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
             
-            <!-- DJ Profile Card - Overlay Style -->
+            <!-- DJ Profile Card -->
             <div id="dj-card" class="w-full relative rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.2)] group transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] bg-gray-900">
                 <!-- Background Image -->
                 <div class="w-full aspect-[4/5] lg:aspect-[3/4] relative">
                     <img src="https://lh3.googleusercontent.com/d/1c7-F8m-Q51qCx7oRLSa6zYhXsKKVAocA" alt="DJ KRIT" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: 50% 15%;">
                     
-                    <!-- Gradient Overlay (Dark at bottom) -->
+                    <!-- Gradient Overlay -->
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
                     
-                    <!-- Status Badge (Top Right) -->
+                    <!-- Status Badge -->
                     <div class="absolute top-4 right-4 z-10">
                         <span class="text-xs font-bold px-3 py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
                     </div>
@@ -283,7 +285,6 @@
                         
                         <div class="w-full h-[1px] bg-white/10 mb-3"></div>
                         <div class="flex items-center justify-end w-full">
-                            <!-- Small Logo Icon -->
                             <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" class="h-4 w-auto opacity-70">
                         </div>
                     </div>
@@ -300,36 +301,61 @@
     </main>
 
     <!-- Audio Element -->
-    <audio id="radio-player" preload="none" crossorigin="anonymous">
+    <audio id="radio-player" preload="none">
         Browser ของคุณไม่รองรับการเล่นเสียง
     </audio>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION: CHANGE STATION ID HERE ---
+            const STATION_ID = "sbf4f79825"; 
+            // ---------------------------------------------
+
+            const urls = {
+                stream: `https://streaming.radio.co/${STATION_ID}/listen`,
+                status: `https://public.radio.co/stations/${STATION_ID}/status`,
+                nextScript: `https://embed.radio.co/embed/${STATION_ID}/next.js`
+            };
+            const defaultArtwork = "https://i.postimg.cc/8cBPtCd1/logo-new.png";
+
             const player = document.getElementById('radio-player');
             const playBtn = document.getElementById('play-btn');
             const iconPlay = document.getElementById('icon-play');
             const iconPause = document.getElementById('icon-pause');
             const volumeSlider = document.getElementById('volume-slider');
-            const artworkContainer = document.querySelector('#artwork-container');
+            
+            const artworkImage = document.getElementById('artwork-image');
             const trackArtistEl = document.getElementById('track-artist');
             const trackTitleEl = document.getElementById('track-title');
-            
-            const streamUrl = "https://streamer.radio.co/sbf4f79825/listen";
-            const statusApiUrl = "https://public.radio.co/stations/sbf4f79825/status";
-            const defaultArtwork = "https://i.postimg.cc/8cBPtCd1/logo-new.png";
+            const nextSongDisplayEl = document.getElementById('next-song-display');
 
             let isPlaying = false;
 
-            // --- 1. DATA FETCHING & UI UPDATE ---
+            // Error handling for the audio player
+            player.addEventListener('error', function(e) {
+                console.error("Audio Player Error:", e);
+                // Only alert if we were trying to play
+                if (isPlaying) {
+                    console.log("Retrying stream connection...");
+                    // Simple retry logic without nocache param first, if fails maybe show alert
+                    isPlaying = false;
+                    iconPlay.classList.remove('hidden');
+                    iconPause.classList.add('hidden');
+                    document.body.classList.remove('is-playing');
+                    alert("ไม่สามารถเชื่อมต่อสัญญาณเสียงได้ในขณะนี้");
+                }
+            });
+
+            // --- 1. DATA FETCHING ---
             async function updateTrackData() {
                 let artworkUrl = defaultArtwork;
                 let fullTitle = "Star Radio - Online Station";
                 let artist = "Star Radio";
                 let title = "Online Station";
 
+                // A. Fetch Standard Status
                 try {
-                    const response = await fetch(statusApiUrl);
+                    const response = await fetch(urls.status);
                     if (response.ok) {
                         const data = await response.json();
                         const track = data.current_track || {};
@@ -344,14 +370,19 @@
                     }
                 } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                // Fallback to On-Screen Image for Artwork if API fails
-                const screenImg = document.querySelector('#artwork-container img');
-                if (screenImg && screenImg.src && !screenImg.src.includes('logo-new.png') && screenImg.naturalWidth > 0) {
-                    artworkUrl = screenImg.src;
-                }
+                // B. Fetch Next Song
+                try {
+                    const nextRes = await fetch(urls.nextScript);
+                    if (nextRes.ok) {
+                        const text = await nextRes.text();
+                        const match = text.match(/document\.write\('(.*)'\)/);
+                        if (match && match[1]) {
+                            nextSongDisplayEl.textContent = match[1];
+                        }
+                    }
+                } catch (e) { }
 
-                // Split Artist - Title
-                // Standard format: "Artist - Title"
+                // Process Title/Artist
                 if (fullTitle.includes(" - ")) {
                     const parts = fullTitle.split(" - ");
                     artist = parts[0];
@@ -363,9 +394,10 @@
                     }
                 }
 
-                // Update UI Text
+                // Update UI
                 if (trackArtistEl) trackArtistEl.textContent = artist;
                 if (trackTitleEl) trackTitleEl.textContent = title;
+                if (artworkImage && artworkImage.src !== artworkUrl) artworkImage.src = artworkUrl;
 
                 // Update Media Session
                 if ('mediaSession' in navigator) {
@@ -385,7 +417,9 @@
             function togglePlay() {
                 if (isPlaying) {
                     player.pause();
-                    player.src = "";
+                    player.src = ""; // Clear buffer
+                    player.load();
+                    
                     isPlaying = false;
                     iconPlay.classList.remove('hidden');
                     iconPause.classList.add('hidden');
@@ -393,24 +427,34 @@
                     
                     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
                 } else {
-                    player.src = streamUrl + "?nocache=" + Date.now();
-                    player.play().then(() => {
-                        isPlaying = true;
-                        iconPlay.classList.add('hidden');
-                        iconPause.classList.remove('hidden');
-                        document.body.classList.add('is-playing');
-                        
-                        updateTrackData();
-                        
-                        if ('mediaSession' in navigator) {
-                            navigator.mediaSession.playbackState = "playing";
-                            navigator.mediaSession.setActionHandler('play', togglePlay);
-                            navigator.mediaSession.setActionHandler('pause', togglePlay);
-                        }
-                    }).catch(error => {
-                        console.error("Playback failed:", error);
-                        // alert("กรุณากดเล่นอีกครั้ง");
-                    });
+                    // Try setting src directly without cache buster first to avoid 404s
+                    player.src = urls.stream; 
+                    player.load();
+                    
+                    const playPromise = player.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            isPlaying = true;
+                            iconPlay.classList.add('hidden');
+                            iconPause.classList.remove('hidden');
+                            document.body.classList.add('is-playing');
+                            
+                            updateTrackData();
+                            
+                            if ('mediaSession' in navigator) {
+                                navigator.mediaSession.playbackState = "playing";
+                                navigator.mediaSession.setActionHandler('play', togglePlay);
+                                navigator.mediaSession.setActionHandler('pause', togglePlay);
+                            }
+                        }).catch(error => {
+                            console.error("Playback failed:", error);
+                            // Only alert if not an abort error (user pressed pause quickly)
+                            if (error.name !== 'AbortError') {
+                                alert("ไม่สามารถเล่นเพลงได้: " + error.message);
+                            }
+                        });
+                    }
                 }
             }
 
@@ -422,26 +466,15 @@
             player.volume = 0.8;
 
             // --- 3. BACKGROUND TASKS ---
-            // Fetch data periodically
-            setInterval(updateTrackData, 10000); // Check every 10s
-            setTimeout(updateTrackData, 1000);   // Initial check shortly after load
+            setInterval(updateTrackData, 10000); 
+            setTimeout(updateTrackData, 1000);  
 
-            // --- 4. STYLE FIXER ---
-            setInterval(() => {
-                const img = document.querySelector('#artwork-container img');
-                if (img) {
-                    img.onerror = function() { 
-                        if (this.src !== defaultArtwork) this.src = defaultArtwork; 
-                    };
-                    // Ensure full width responsive
-                    if (img.style.width !== '100%') {
-                        img.style.width = '100%';
-                        img.style.height = 'auto';
-                        img.style.display = 'block';
-                        img.style.borderRadius = '1rem';
-                    }
-                }
-            }, 1000);
+            // --- 4. IMAGE ERROR HANDLING ---
+            if (artworkImage) {
+                artworkImage.onerror = function() {
+                    if (this.src !== defaultArtwork) this.src = defaultArtwork;
+                };
+            }
         });
     </script>
 </body>
