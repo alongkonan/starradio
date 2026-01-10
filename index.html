@@ -279,7 +279,8 @@
                 <!-- Background Image -->
                 <div class="w-full aspect-[4/5] lg:aspect-[3/4] relative">
                     <!-- Default Image (will be changed by JS) -->
-                    <img id="dj-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="DJ Station" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: 50% 15%;">
+                    <!-- Changed object-position to 'top' to ensure head is visible -->
+                    <img id="dj-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="DJ Station" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: top;">
                     
                     <!-- Gradient Overlay -->
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
@@ -399,8 +400,9 @@
                         djNameEl.textContent = currentShow.name;
                         djTimeEl.textContent = currentShow.timeLabel;
                         djImageEl.src = currentShow.image;
-                        // Style adjustment for real photos
+                        // Style adjustment for real photos: Cover + Top Alignment
                         djImageEl.style.objectFit = "cover";
+                        djImageEl.style.objectPosition = "top"; 
                         djStatusBadge.textContent = "ON AIR";
                         djStatusBadge.classList.remove("bg-gray-600");
                         djStatusBadge.classList.add("bg-red-600/90", "animate-pulse");
@@ -411,8 +413,9 @@
                         djNameEl.textContent = defaultDJ.name;
                         djTimeEl.textContent = defaultDJ.timeLabel;
                         djImageEl.src = defaultDJ.image;
-                        // Style adjustment for logo
+                        // Style adjustment for logo: Contain + Center Alignment
                         djImageEl.style.objectFit = "contain"; 
+                        djImageEl.style.objectPosition = "center";
                         djStatusBadge.textContent = "OFF AIR";
                         djStatusBadge.classList.remove("bg-red-600/90", "animate-pulse");
                         djStatusBadge.classList.add("bg-gray-600");
