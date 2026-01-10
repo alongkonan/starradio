@@ -43,14 +43,14 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* Artwork Styling */
-        #artwork-image {
+        /* Artwork Styling - Updated to target the img injected by script */
+        #artwork-container img {
             width: 100%;
-            max-width: 350px; /* ปรับให้ใหญ่ขึ้นในมือถือ (จาก 300px) */
+            max-width: 350px; /* ปรับให้ใหญ่ขึ้นเป็น 350px (เกือบเต็มจอมือถือ) */
             height: auto;
             aspect-ratio: 1/1;
             object-fit: cover;
-            border-radius: 1.5rem; /* ปรับความมนให้เข้ากับดีไซน์ใหม่ */
+            border-radius: 1.5rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
             margin: 0 auto;
             display: block;
@@ -59,12 +59,13 @@
         
         /* Desktop specific artwork adjustment */
         @media (min-width: 1024px) {
-            #artwork-image {
-                max-width: 450px; /* ปรับให้ใหญ่สะใจในจอคอม (จาก 280px) */
+            #artwork-container img {
+                max-width: 450px; /* ปรับให้ใหญ่สะใจในจอคอม (450px) */
             }
         }
         
-        .is-playing #artwork-image {
+        /* Animation when playing */
+        .is-playing #artwork-container img {
             animation: pulse-art 2s infinite;
         }
 
@@ -170,8 +171,8 @@
                 <div class="w-full lg:w-auto flex-shrink-0 flex flex-col items-center">
                     <div id="artwork-wrapper" class="w-full flex justify-center lg:block">
                          <div id="artwork-container" class="flex justify-center">
-                             <!-- Using standard img tag now, controlled by JS -->
-                             <img id="artwork-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Album Art">
+                             <!-- Replaced custom IMG with Radio.co Embed Script -->
+                             <script src="https://embed.radio.co/embed/sbf4f79825/artwork.js"></script>
                          </div>
                     </div>
                 </div>
@@ -324,7 +325,7 @@
             const iconPause = document.getElementById('icon-pause');
             const volumeSlider = document.getElementById('volume-slider');
             
-            const artworkImage = document.getElementById('artwork-image');
+            // Note: artworkImage control removed as we use the embed script now
             const trackArtistEl = document.getElementById('track-artist');
             const trackTitleEl = document.getElementById('track-title');
             const nextSongDisplayEl = document.getElementById('next-song-display');
@@ -396,7 +397,7 @@
                 // Update UI
                 if (trackArtistEl) trackArtistEl.textContent = artist;
                 if (trackTitleEl) trackTitleEl.textContent = title;
-                if (artworkImage && artworkImage.src !== artworkUrl) artworkImage.src = artworkUrl;
+                // Artwork is handled by script now
 
                 // Update Media Session
                 if ('mediaSession' in navigator) {
@@ -466,13 +467,6 @@
             // --- 3. BACKGROUND TASKS ---
             updateTrackData(); // Call immediately on load
             setInterval(updateTrackData, 10000); 
-
-            // --- 4. IMAGE ERROR HANDLING ---
-            if (artworkImage) {
-                artworkImage.onerror = function() {
-                    if (this.src !== defaultArtwork) this.src = defaultArtwork;
-                };
-            }
         });
     </script>
 </body>
