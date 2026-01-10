@@ -190,19 +190,27 @@
                         <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Star Radio Logo" class="h-10 lg:h-12 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
                     </div>
 
-                    <!-- Song Info -->
-                    <div class="w-full space-y-3 lg:space-y-4">
+                    <!-- Song Info (UPDATED: Separated Artist and Title) -->
+                    <div class="w-full space-y-1 lg:space-y-2">
+                        
+                        <!-- Artist Name -->
+                        <div class="w-full text-center lg:text-left">
+                            <p id="track-artist" class="text-lg text-purple-300 font-medium truncate">
+                                Star Radio
+                            </p>
+                        </div>
+
                         <!-- Current Song Title -->
                         <div class="w-full h-12 relative song-title-wrapper">
                             <div class="marquee-container absolute inset-0 flex items-center lg:justify-start">
-                                <h2 class="text-2xl md:text-4xl font-bold marquee-content text-white">
-                                    <script src="https://embed.radio.co/embed/s8024d04b5/song.js"></script>
+                                <h2 id="track-title" class="text-2xl md:text-4xl font-bold marquee-content text-white">
+                                    Online Station
                                 </h2>
                             </div>
                         </div>
                         
                         <!-- Next Song -->
-                        <div class="flex items-center justify-center lg:justify-start w-full">
+                        <div class="flex items-center justify-center lg:justify-start w-full pt-2">
                             <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1.5 px-4 rounded-full w-full max-w-sm lg:max-w-md border border-white/5 overflow-hidden">
                                 <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
                                 <div class="marquee-container w-full h-6 flex items-center">
@@ -284,8 +292,6 @@
                 </div>
             </div>
 
-            <!-- Removed Additional Station Info (Desktop Filler) -->
-
         </div>
 
         <!-- Mobile Footer -->
@@ -308,6 +314,8 @@
             const iconPause = document.getElementById('icon-pause');
             const volumeSlider = document.getElementById('volume-slider');
             const artworkContainer = document.querySelector('#artwork-container');
+            const trackArtistEl = document.getElementById('track-artist');
+            const trackTitleEl = document.getElementById('track-title');
             
             const streamUrl = "https://streamer.radio.co/s8024d04b5/listen";
             const statusApiUrl = "https://public.radio.co/stations/s8024d04b5/status";
@@ -315,17 +323,19 @@
 
             let isPlaying = false;
 
-            // --- 1. NOTIFICATION SYSTEM ---
-            async function updateNotificationData() {
+            // --- 1. DATA FETCHING & UI UPDATE ---
+            async function updateTrackData() {
                 let artworkUrl = defaultArtwork;
-                let fullTitle = "Star Radio";
-                let artist = "Online Station";
+                let fullTitle = "Star Radio - Online Station";
+                let artist = "Star Radio";
+                let title = "Online Station";
 
                 try {
                     const response = await fetch(statusApiUrl);
                     if (response.ok) {
                         const data = await response.json();
                         const track = data.current_track || {};
+                        
                         if (track.title) fullTitle = track.title;
                         
                         if (track.artwork_url && track.artwork_url !== 'null') {
@@ -336,19 +346,33 @@
                     }
                 } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                // Fallback to On-Screen Image
+                // Fallback to On-Screen Image for Artwork if API fails
                 const screenImg = document.querySelector('#artwork-container img');
                 if (screenImg && screenImg.src && !screenImg.src.includes('logo-new.png') && screenImg.naturalWidth > 0) {
                     artworkUrl = screenImg.src;
                 }
 
-                let title = fullTitle;
+                // Split Artist - Title
+                // Standard format: "Artist - Title"
                 if (fullTitle.includes(" - ")) {
                     const parts = fullTitle.split(" - ");
                     artist = parts[0];
                     title = parts.slice(1).join(" - ");
+                } else {
+                    // Sometimes format might be "Title - Artist" or just "Title"
+                    // We assume "Artist - Title" as standard for radio.co
+                    title = fullTitle;
+                    // Keep default artist or try to guess? Sticking to full title as title if no dash.
+                    if (artist === "Star Radio" && fullTitle !== "Star Radio - Online Station") {
+                        artist = "Now Playing";
+                    }
                 }
 
+                // Update UI Text
+                if (trackArtistEl) trackArtistEl.textContent = artist;
+                if (trackTitleEl) trackTitleEl.textContent = title;
+
+                // Update Media Session
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: title,
@@ -381,7 +405,7 @@
                         iconPause.classList.remove('hidden');
                         document.body.classList.add('is-playing');
                         
-                        updateNotificationData();
+                        updateTrackData();
                         
                         if ('mediaSession' in navigator) {
                             navigator.mediaSession.playbackState = "playing";
@@ -403,8 +427,9 @@
             player.volume = 0.8;
 
             // --- 3. BACKGROUND TASKS ---
-            setInterval(updateNotificationData, 5000);
-            setTimeout(updateNotificationData, 2000);
+            // Fetch data periodically
+            setInterval(updateTrackData, 10000); // Check every 10s
+            setTimeout(updateTrackData, 1000);   // Initial check shortly after load
 
             // --- 4. STYLE FIXER ---
             setInterval(() => {
