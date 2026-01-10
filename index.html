@@ -43,10 +43,10 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* Artwork Styling - Updated to target the img injected by script */
-        #artwork-container img {
+        /* Artwork Styling */
+        #artwork-image {
             width: 100%;
-            max-width: 350px; /* ปรับให้ใหญ่ขึ้นเป็น 350px (เกือบเต็มจอมือถือ) */
+            max-width: 350px; /* ขนาดใหญ่สำหรับมือถือ */
             height: auto;
             aspect-ratio: 1/1;
             object-fit: cover;
@@ -59,13 +59,12 @@
         
         /* Desktop specific artwork adjustment */
         @media (min-width: 1024px) {
-            #artwork-container img {
-                max-width: 450px; /* ปรับให้ใหญ่สะใจในจอคอม (450px) */
+            #artwork-image {
+                max-width: 450px; /* ขนาดใหญ่สำหรับจอคอม */
             }
         }
         
-        /* Animation when playing */
-        .is-playing #artwork-container img {
+        .is-playing #artwork-image {
             animation: pulse-art 2s infinite;
         }
 
@@ -171,8 +170,8 @@
                 <div class="w-full lg:w-auto flex-shrink-0 flex flex-col items-center">
                     <div id="artwork-wrapper" class="w-full flex justify-center lg:block">
                          <div id="artwork-container" class="flex justify-center">
-                             <!-- Replaced custom IMG with Radio.co Embed Script -->
-                             <script src="https://embed.radio.co/embed/sbf4f79825/artwork.js"></script>
+                             <!-- Replaced script with IMG to control size properly -->
+                             <img id="artwork-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Album Art">
                          </div>
                     </div>
                 </div>
@@ -214,9 +213,9 @@
                             <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1.5 px-4 rounded-full w-full max-w-sm lg:max-w-md border border-white/5 overflow-hidden">
                                 <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
                                 <div class="marquee-container w-full h-6 flex items-center">
-                                    <!-- Dynamic Content from JS -->
-                                    <span id="next-song-display" class="marquee-content" style="animation-duration: 12s;">
-                                        ...
+                                    <!-- Use direct script embed as requested -->
+                                    <span class="marquee-content" style="animation-duration: 12s;">
+                                        <script src="https://embed.radio.co/embed/sbf4f79825/next.js"></script>
                                     </span>
                                 </div>
                             </div>
@@ -325,17 +324,16 @@
             const iconPause = document.getElementById('icon-pause');
             const volumeSlider = document.getElementById('volume-slider');
             
-            // Note: artworkImage control removed as we use the embed script now
+            const artworkImage = document.getElementById('artwork-image');
             const trackArtistEl = document.getElementById('track-artist');
             const trackTitleEl = document.getElementById('track-title');
-            const nextSongDisplayEl = document.getElementById('next-song-display');
+            // Removed nextSongDisplayEl selector as we use direct script now
 
             let isPlaying = false;
 
             // Error handling for the audio player
             player.addEventListener('error', function(e) {
                 console.error("Audio Player Error:", e);
-                // Only alert if we were trying to play
                 if (isPlaying) {
                     console.log("Retrying stream connection...");
                     isPlaying = false;
@@ -353,7 +351,7 @@
                 let artist = "Star Radio";
                 let title = "Online Station";
 
-                // A. Fetch Standard Status (Added timestamp to prevent caching)
+                // A. Fetch Standard Status (Main Info + Artwork)
                 try {
                     const response = await fetch(`${urls.status}?t=${Date.now()}`);
                     if (response.ok) {
@@ -362,25 +360,16 @@
                         
                         if (track.title) fullTitle = track.title;
                         
-                        if (track.artwork_url && track.artwork_url !== 'null') {
-                            artworkUrl = track.artwork_url;
-                        } else if (track.artwork_url_large && track.artwork_url_large !== 'null') {
+                        // Prioritize Large Artwork
+                        if (track.artwork_url_large && track.artwork_url_large !== 'null') {
                             artworkUrl = track.artwork_url_large;
+                        } else if (track.artwork_url && track.artwork_url !== 'null') {
+                            artworkUrl = track.artwork_url;
                         }
                     }
                 } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                // B. Fetch Next Song (Added timestamp to prevent caching)
-                try {
-                    const nextRes = await fetch(`${urls.nextScript}?t=${Date.now()}`);
-                    if (nextRes.ok) {
-                        const text = await nextRes.text();
-                        const match = text.match(/document\.write\('(.*)'\)/);
-                        if (match && match[1]) {
-                            nextSongDisplayEl.textContent = match[1];
-                        }
-                    }
-                } catch (e) { }
+                // Removed Block B (Fetch Next Song via Iframe Scraper) as we use direct script
 
                 // Process Title/Artist
                 if (fullTitle.includes(" - ")) {
@@ -397,7 +386,7 @@
                 // Update UI
                 if (trackArtistEl) trackArtistEl.textContent = artist;
                 if (trackTitleEl) trackTitleEl.textContent = title;
-                // Artwork is handled by script now
+                if (artworkImage && artworkImage.src !== artworkUrl) artworkImage.src = artworkUrl;
 
                 // Update Media Session
                 if ('mediaSession' in navigator) {
@@ -417,7 +406,7 @@
             function togglePlay() {
                 if (isPlaying) {
                     player.pause();
-                    player.src = ""; // Clear buffer
+                    player.src = ""; 
                     player.load();
                     
                     isPlaying = false;
@@ -427,7 +416,6 @@
                     
                     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
                 } else {
-                    // Try setting src directly without cache buster first to avoid 404s
                     player.src = urls.stream; 
                     player.load();
                     
@@ -465,8 +453,15 @@
             player.volume = 0.8;
 
             // --- 3. BACKGROUND TASKS ---
-            updateTrackData(); // Call immediately on load
+            updateTrackData(); 
             setInterval(updateTrackData, 10000); 
+
+            // --- 4. IMAGE ERROR HANDLING ---
+            if (artworkImage) {
+                artworkImage.onerror = function() {
+                    if (this.src !== defaultArtwork) this.src = defaultArtwork;
+                };
+            }
         });
     </script>
 </body>
