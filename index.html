@@ -46,11 +46,11 @@
         /* Artwork Styling */
         #artwork-image {
             width: 100%;
-            max-width: 300px;
+            max-width: 350px; /* ปรับให้ใหญ่ขึ้นในมือถือ (จาก 300px) */
             height: auto;
             aspect-ratio: 1/1;
             object-fit: cover;
-            border-radius: 1rem;
+            border-radius: 1.5rem; /* ปรับความมนให้เข้ากับดีไซน์ใหม่ */
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
             margin: 0 auto;
             display: block;
@@ -60,7 +60,7 @@
         /* Desktop specific artwork adjustment */
         @media (min-width: 1024px) {
             #artwork-image {
-                max-width: 280px; 
+                max-width: 450px; /* ปรับให้ใหญ่สะใจในจอคอม (จาก 280px) */
             }
         }
         
@@ -337,7 +337,6 @@
                 // Only alert if we were trying to play
                 if (isPlaying) {
                     console.log("Retrying stream connection...");
-                    // Simple retry logic without nocache param first, if fails maybe show alert
                     isPlaying = false;
                     iconPlay.classList.remove('hidden');
                     iconPause.classList.add('hidden');
@@ -353,9 +352,9 @@
                 let artist = "Star Radio";
                 let title = "Online Station";
 
-                // A. Fetch Standard Status
+                // A. Fetch Standard Status (Added timestamp to prevent caching)
                 try {
-                    const response = await fetch(urls.status);
+                    const response = await fetch(`${urls.status}?t=${Date.now()}`);
                     if (response.ok) {
                         const data = await response.json();
                         const track = data.current_track || {};
@@ -370,9 +369,9 @@
                     }
                 } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                // B. Fetch Next Song
+                // B. Fetch Next Song (Added timestamp to prevent caching)
                 try {
-                    const nextRes = await fetch(urls.nextScript);
+                    const nextRes = await fetch(`${urls.nextScript}?t=${Date.now()}`);
                     if (nextRes.ok) {
                         const text = await nextRes.text();
                         const match = text.match(/document\.write\('(.*)'\)/);
@@ -449,7 +448,6 @@
                             }
                         }).catch(error => {
                             console.error("Playback failed:", error);
-                            // Only alert if not an abort error (user pressed pause quickly)
                             if (error.name !== 'AbortError') {
                                 alert("ไม่สามารถเล่นเพลงได้: " + error.message);
                             }
@@ -466,8 +464,8 @@
             player.volume = 0.8;
 
             // --- 3. BACKGROUND TASKS ---
+            updateTrackData(); // Call immediately on load
             setInterval(updateTrackData, 10000); 
-            setTimeout(updateTrackData, 1000);  
 
             // --- 4. IMAGE ERROR HANDLING ---
             if (artworkImage) {
