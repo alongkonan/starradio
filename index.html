@@ -46,7 +46,7 @@
         /* Artwork Styling */
         #artwork-image {
             width: 100%;
-            max-width: 350px; /* ขนาดปกติ (ใหญ่) */
+            max-width: 350px; 
             height: auto;
             aspect-ratio: 1/1;
             object-fit: cover;
@@ -54,22 +54,19 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
             margin: 0 auto;
             display: block;
-            /* เพิ่ม transition ให้การปรับขนาดนุ่มนวล */
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        /* Class สำหรับลดขนาดรูปเมื่อชื่อเพลงยาว */
         .art-shrink {
-            max-width: 220px !important; /* ปรับลดลงให้เห็นชัดขึ้น */
+            max-width: 220px !important; 
         }
         
-        /* Desktop specific artwork adjustment */
         @media (min-width: 1024px) {
             #artwork-image {
-                max-width: 450px; /* ขนาดปกติ Desktop */
+                max-width: 450px; 
             }
             .art-shrink {
-                max-width: 320px !important; /* ลดขนาดลงใน Desktop */
+                max-width: 320px !important; 
             }
         }
         
@@ -161,11 +158,6 @@
             0% { transform: translate(0, 0); }
             100% { transform: translate(-100%, 0); }
         }
-        
-        /* DJ Image Transition */
-        #dj-image {
-            transition: opacity 0.5s ease-in-out;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center relative p-4 bg-gradient-to-br from-slate-900 via-purple-950 to-black overflow-y-auto py-8 lg:py-0">
@@ -184,7 +176,6 @@
                 <div class="w-full lg:w-auto flex-shrink-0 flex flex-col items-center">
                     <div id="artwork-wrapper" class="w-full flex justify-center lg:block">
                          <div id="artwork-container" class="flex justify-center">
-                             <!-- Replaced script with IMG to control size properly -->
                              <img id="artwork-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="Album Art">
                          </div>
                     </div>
@@ -227,7 +218,6 @@
                             <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1.5 px-4 rounded-full w-full max-w-sm lg:max-w-md border border-white/5 overflow-hidden">
                                 <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
                                 <div class="marquee-container w-full h-6 flex items-center">
-                                    <!-- Use direct script embed as requested -->
                                     <span class="marquee-content" style="animation-duration: 12s;">
                                         <script src="https://embed.radio.co/embed/sbf4f79825/next.js"></script>
                                     </span>
@@ -239,7 +229,6 @@
                     <!-- Audio Player Controls -->
                     <div class="w-full flex flex-col items-center lg:items-start gap-6 mt-2">
                         <div class="flex items-center justify-center lg:justify-start gap-8 w-full">
-                            <!-- Visualizer (Left - Mobile Only) -->
                             <div class="equalizer h-8 w-12 hidden md:flex lg:hidden">
                                 <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
                             </div>
@@ -253,13 +242,11 @@
                                 </svg>
                             </button>
 
-                            <!-- Visualizer (Right/Desktop) -->
                             <div class="equalizer h-12 w-16 hidden lg:flex gap-[3px]">
                                 <div class="bar w-1.5"></div><div class="bar w-1.5"></div><div class="bar w-1.5"></div><div class="bar w-1.5"></div><div class="bar w-1.5"></div><div class="bar w-1.5"></div>
                             </div>
                         </div>
 
-                        <!-- Volume Control -->
                         <div class="w-full flex items-center gap-3 px-4 lg:px-0 max-w-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -282,22 +269,25 @@
                     
                     <!-- Image Container -->
                     <div class="w-[120px] sm:w-[140px] lg:w-full aspect-[3/4] lg:aspect-[3/4] relative flex-shrink-0">
-                        <!-- Default Image -->
                         <img id="dj-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="DJ Station" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: top;">
                         
                         <!-- Gradient Overlay (Desktop Only) -->
                         <div class="hidden lg:block absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
                         
-                        <!-- Status Badge -->
-                        <div class="absolute top-2 left-2 lg:top-4 lg:right-4 lg:left-auto z-10">
-                            <span id="dj-status-badge" class="text-[10px] lg:text-xs font-bold px-2 py-1 lg:px-3 lg:py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
+                        <!-- Status Badge (Desktop Only: In Image) -->
+                        <div class="hidden lg:block absolute top-4 right-4 z-10">
+                            <span id="dj-status-badge-desktop" class="text-xs font-bold px-3 py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
                         </div>
                     </div>
 
                     <!-- Content Container -->
-                    <!-- Mobile: Side padding. Desktop: Overlay bottom padding -->
-                    <div class="flex-1 p-4 flex flex-col justify-center lg:absolute lg:bottom-0 lg:left-0 lg:w-full lg:p-6 lg:justify-end z-10">
-                        <h3 id="dj-name" class="font-bold text-xl lg:text-4xl text-white leading-tight lg:leading-none tracking-tight mb-1 lg:mb-2 drop-shadow-lg line-clamp-1 lg:line-clamp-none">STAR RADIO</h3>
+                    <div class="flex-1 p-4 flex flex-col justify-center lg:absolute lg:bottom-0 lg:left-0 lg:w-full lg:p-6 lg:justify-end z-10 relative">
+                        <!-- Status Badge (Mobile Only: In Content Area) -->
+                        <div class="lg:hidden absolute top-3 right-3 z-10">
+                            <span id="dj-status-badge-mobile" class="text-[10px] font-bold px-2 py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
+                        </div>
+
+                        <h3 id="dj-name" class="font-bold text-xl lg:text-4xl text-white leading-tight lg:leading-none tracking-tight mb-1 lg:mb-2 drop-shadow-lg line-clamp-1 lg:line-clamp-none pr-14 lg:pr-0">STAR RADIO</h3>
                         
                         <div class="flex flex-wrap items-center gap-2 mb-0 lg:mb-4">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white border border-white/10 backdrop-blur-md hidden lg:inline-block">HOST</span>
@@ -328,22 +318,20 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- CONFIGURATION: CHANGE STATION ID HERE ---
             const STATION_ID = "sbf4f79825"; 
-            // ---------------------------------------------
 
             // --- DJ SCHEDULE CONFIGURATION ---
             const djSchedule = [
                 {
-                    day: 6, // Saturday (0=Sun, 1=Mon, ..., 6=Sat)
-                    start: 9, // Start hour (24h)
-                    end: 15,  // End hour (24h)
+                    day: 6, 
+                    start: 9, 
+                    end: 15,  
                     name: "DJ KRIT",
                     timeLabel: "SAT 09.00-15.00",
                     image: "https://lh3.googleusercontent.com/d/1c7-F8m-Q51qCx7oRLSa6zYhXsKKVAocA"
                 },
                 {
-                    day: 6, // Saturday
+                    day: 6, 
                     start: 15,
                     end: 19,
                     name: "DJ MAN",
@@ -354,7 +342,7 @@
             const defaultDJ = {
                 name: "STAR RADIO",
                 timeLabel: "Non-stop Hits",
-                image: "https://i.postimg.cc/8cBPtCd1/logo-new.png" // Use logo or generic station image
+                image: "https://i.postimg.cc/8cBPtCd1/logo-new.png" 
             };
 
             const urls = {
@@ -374,11 +362,15 @@
             const trackArtistEl = document.getElementById('track-artist');
             const trackTitleEl = document.getElementById('track-title');
             
-            // DJ Card Elements
             const djImageEl = document.getElementById('dj-image');
             const djNameEl = document.getElementById('dj-name');
             const djTimeEl = document.getElementById('dj-time');
-            const djStatusBadge = document.getElementById('dj-status-badge');
+            
+            // Select both badges (Mobile & Desktop)
+            const djStatusBadges = [
+                document.getElementById('dj-status-badge-desktop'),
+                document.getElementById('dj-status-badge-mobile')
+            ];
 
             let isPlaying = false;
 
@@ -390,7 +382,6 @@
                 
                 let currentShow = null;
 
-                // Find active DJ
                 for (const show of djSchedule) {
                     if (show.day === day && hour >= show.start && hour < show.end) {
                         currentShow = show;
@@ -398,37 +389,50 @@
                     }
                 }
 
-                // Update UI
+                // Prepare new values
+                let newName = defaultDJ.name;
+                let newTime = defaultDJ.timeLabel;
+                let newImage = defaultDJ.image;
+                let isLive = false;
+
                 if (currentShow) {
-                    // Specific DJ is On Air
-                    if (djNameEl.textContent !== currentShow.name) {
-                        djNameEl.textContent = currentShow.name;
-                        djTimeEl.textContent = currentShow.timeLabel;
-                        djImageEl.src = currentShow.image;
-                        // Style adjustment for real photos: Cover + Top Alignment
+                    newName = currentShow.name;
+                    newTime = currentShow.timeLabel;
+                    newImage = currentShow.image;
+                    isLive = true;
+                }
+
+                // Update DOM only if changed (simple check)
+                if (djNameEl.textContent !== newName) {
+                    djNameEl.textContent = newName;
+                    djTimeEl.textContent = newTime;
+                    djImageEl.src = newImage;
+                    
+                    if (isLive) {
                         djImageEl.style.objectFit = "cover";
                         djImageEl.style.objectPosition = "top"; 
-                        djStatusBadge.textContent = "ON AIR";
-                        djStatusBadge.classList.remove("bg-gray-600");
-                        djStatusBadge.classList.add("bg-red-600/90", "animate-pulse");
-                    }
-                } else {
-                    // Default Station Info (Off Air)
-                    if (djNameEl.textContent !== defaultDJ.name) {
-                        djNameEl.textContent = defaultDJ.name;
-                        djTimeEl.textContent = defaultDJ.timeLabel;
-                        djImageEl.src = defaultDJ.image;
-                        // Style adjustment for logo: Contain + Center Alignment
+                    } else {
                         djImageEl.style.objectFit = "contain"; 
                         djImageEl.style.objectPosition = "center";
-                        djStatusBadge.textContent = "OFF AIR";
-                        djStatusBadge.classList.remove("bg-red-600/90", "animate-pulse");
-                        djStatusBadge.classList.add("bg-gray-600");
                     }
+
+                    // Update all badges
+                    djStatusBadges.forEach(badge => {
+                        if (badge) {
+                            if (isLive) {
+                                badge.textContent = "ON AIR";
+                                badge.classList.remove("bg-gray-600");
+                                badge.classList.add("bg-red-600/90", "animate-pulse");
+                            } else {
+                                badge.textContent = "OFF AIR";
+                                badge.classList.remove("bg-red-600/90", "animate-pulse");
+                                badge.classList.add("bg-gray-600");
+                            }
+                        }
+                    });
                 }
             }
 
-            // Error handling for the audio player
             player.addEventListener('error', function(e) {
                 console.error("Audio Player Error:", e);
                 if (isPlaying) {
@@ -448,7 +452,6 @@
                 let artist = "Star Radio";
                 let title = "Online Station";
 
-                // A. Fetch Standard Status (Main Info + Artwork)
                 try {
                     const response = await fetch(`${urls.status}?t=${Date.now()}`);
                     if (response.ok) {
@@ -457,7 +460,6 @@
                         
                         if (track.title) fullTitle = track.title;
                         
-                        // Prioritize Large Artwork
                         if (track.artwork_url_large && track.artwork_url_large !== 'null') {
                             artworkUrl = track.artwork_url_large;
                         } else if (track.artwork_url && track.artwork_url !== 'null') {
@@ -466,7 +468,6 @@
                     }
                 } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                // Process Title/Artist
                 if (fullTitle.includes(" - ")) {
                     const parts = fullTitle.split(" - ");
                     artist = parts[0];
@@ -478,14 +479,10 @@
                     }
                 }
 
-                // Update UI
                 if (trackArtistEl) trackArtistEl.textContent = artist;
                 if (trackTitleEl) {
                     trackTitleEl.textContent = title;
-                    
-                    // --- SMART RESIZE LOGIC ---
                     if (artworkImage) {
-                        // Check if title is longer than 20 chars
                         if (title.length > 20) {
                             artworkImage.classList.add('art-shrink');
                         } else {
@@ -496,7 +493,6 @@
                 
                 if (artworkImage && artworkImage.src !== artworkUrl) artworkImage.src = artworkUrl;
 
-                // Update Media Session
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: title,
@@ -564,11 +560,9 @@
             updateTrackData(); 
             setInterval(updateTrackData, 10000); 
             
-            // Check DJ Schedule
             updateDJCard();
-            setInterval(updateDJCard, 60000); // Update every minute
+            setInterval(updateDJCard, 60000);
 
-            // --- 4. IMAGE ERROR HANDLING ---
             if (artworkImage) {
                 artworkImage.onerror = function() {
                     if (this.src !== defaultArtwork) this.src = defaultArtwork;
