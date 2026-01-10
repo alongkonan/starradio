@@ -60,7 +60,7 @@
         
         /* Class สำหรับลดขนาดรูปเมื่อชื่อเพลงยาว */
         .art-shrink {
-            max-width: 260px !important; /* ลดขนาดลงในมือถือ */
+            max-width: 220px !important; /* ปรับลดลงให้เห็นชัดขึ้น (จาก 260px) */
         }
         
         /* Desktop specific artwork adjustment */
@@ -69,7 +69,7 @@
                 max-width: 450px; /* ขนาดปกติ Desktop */
             }
             .art-shrink {
-                max-width: 350px !important; /* ลดขนาดลงใน Desktop */
+                max-width: 320px !important; /* ลดขนาดลงใน Desktop */
             }
         }
         
@@ -222,9 +222,9 @@
                             <div class="flex items-center gap-2 text-sm text-gray-300 bg-black/30 py-1.5 px-4 rounded-full w-full max-w-sm lg:max-w-md border border-white/5 overflow-hidden">
                                 <span class="text-purple-400 font-semibold whitespace-nowrap flex-shrink-0 z-10 bg-black/10">ถัดไป:</span>
                                 <div class="marquee-container w-full h-6 flex items-center">
-                                    <!-- Use direct script embed as requested -->
-                                    <span class="marquee-content" style="animation-duration: 12s;">
-                                        <script src="https://embed.radio.co/embed/sbf4f79825/next.js"></script>
+                                    <!-- Dynamic Content from JS -->
+                                    <span id="next-song-display" class="marquee-content" style="animation-duration: 12s;">
+                                        Stay Tuned
                                     </span>
                                 </div>
                             </div>
@@ -336,7 +336,7 @@
             const artworkImage = document.getElementById('artwork-image');
             const trackArtistEl = document.getElementById('track-artist');
             const trackTitleEl = document.getElementById('track-title');
-            // Removed nextSongDisplayEl selector as we use direct script now
+            const nextSongDisplayEl = document.getElementById('next-song-display');
 
             let isPlaying = false;
 
@@ -352,6 +352,49 @@
                     alert("ไม่สามารถเชื่อมต่อสัญญาณเสียงได้ในขณะนี้");
                 }
             });
+
+            // --- HELPER: SCRAPE SCRIPT CONTENT via IFRAME (Bypass CORS) ---
+            function fetchScriptContent(url, callback) {
+                const oldIframe = document.getElementById('scraper-iframe');
+                if (oldIframe) document.body.removeChild(oldIframe);
+
+                const iframe = document.createElement('iframe');
+                iframe.id = 'scraper-iframe';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+
+                const scriptSrc = `${url}?t=${Date.now()}`;
+                
+                // Add Timeout
+                const timeoutId = setTimeout(() => {
+                    if(document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                        // Don't callback on timeout to prevent "Loading.." flicker
+                    }
+                }, 2500); // 2.5s limit
+
+                const doc = iframe.contentWindow.document;
+                doc.open();
+                doc.write(`<html><body><script src="${scriptSrc}"><\/script></body></html>`);
+                doc.close();
+
+                iframe.onload = function() {
+                    clearTimeout(timeoutId);
+                    try {
+                        const content = iframe.contentWindow.document.body.innerText;
+                        if (content && content.trim() !== "") {
+                            let text = content.trim();
+                            // Filter unwanted text
+                            if (text.includes("Loading") || text === "...") {
+                                text = "Star Radio"; // Fallback text
+                            }
+                            callback(text);
+                        }
+                    } catch (e) {
+                        console.error("Scrape error", e);
+                    }
+                };
+            }
 
             // --- 1. DATA FETCHING ---
             async function updateTrackData() {
@@ -378,7 +421,10 @@
                     }
                 } catch (e) { console.log("API Fetch failed, using defaults"); }
 
-                // Removed Block B (Fetch Next Song via Iframe Scraper) as we use direct script
+                // B. Fetch Next Song via Iframe Scraper
+                fetchScriptContent(urls.nextScript, (content) => {
+                    if (nextSongDisplayEl) nextSongDisplayEl.textContent = content;
+                });
 
                 // Process Title/Artist
                 if (fullTitle.includes(" - ")) {
@@ -399,8 +445,8 @@
                     
                     // --- SMART RESIZE LOGIC ---
                     if (artworkImage) {
-                        // Check if title is longer than 40 chars
-                        if (title.length > 40) {
+                        // Check if title is longer than 20 chars (Reduced from 40 for responsiveness)
+                        if (title.length > 20) {
                             artworkImage.classList.add('art-shrink');
                         } else {
                             artworkImage.classList.remove('art-shrink');
@@ -428,7 +474,7 @@
             function togglePlay() {
                 if (isPlaying) {
                     player.pause();
-                    player.src = ""; // Clear buffer
+                    player.src = ""; 
                     player.load();
                     
                     isPlaying = false;
@@ -438,7 +484,6 @@
                     
                     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
                 } else {
-                    // Try setting src directly without cache buster first to avoid 404s
                     player.src = urls.stream; 
                     player.load();
                     
@@ -476,7 +521,7 @@
             player.volume = 0.8;
 
             // --- 3. BACKGROUND TASKS ---
-            updateTrackData(); // Call immediately on load
+            updateTrackData(); 
             setInterval(updateTrackData, 10000); 
 
             // --- 4. IMAGE ERROR HANDLING ---
