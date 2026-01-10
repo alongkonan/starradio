@@ -46,7 +46,7 @@
         /* Artwork Styling */
         #artwork-image {
             width: 100%;
-            max-width: 350px; /* ขนาดใหญ่สำหรับมือถือ */
+            max-width: 350px; /* ขนาดปกติ (ใหญ่) */
             height: auto;
             aspect-ratio: 1/1;
             object-fit: cover;
@@ -54,13 +54,22 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
             margin: 0 auto;
             display: block;
-            transition: transform 0.5s ease;
+            /* เพิ่ม transition ให้การปรับขนาดนุ่มนวล */
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Class สำหรับลดขนาดรูปเมื่อชื่อเพลงยาว */
+        .art-shrink {
+            max-width: 260px !important; /* ลดขนาดลงในมือถือ */
         }
         
         /* Desktop specific artwork adjustment */
         @media (min-width: 1024px) {
             #artwork-image {
-                max-width: 450px; /* ขนาดใหญ่สำหรับจอคอม */
+                max-width: 450px; /* ขนาดปกติ Desktop */
+            }
+            .art-shrink {
+                max-width: 350px !important; /* ลดขนาดลงใน Desktop */
             }
         }
         
@@ -203,7 +212,7 @@
 
                         <!-- Current Song Title -->
                         <div class="w-full relative flex items-center justify-center lg:justify-start">
-                            <h2 id="track-title" class="text-2xl md:text-4xl font-bold text-white text-center lg:text-left leading-tight line-clamp-2">
+                            <h2 id="track-title" class="text-2xl md:text-4xl font-bold text-white text-center lg:text-left leading-tight line-clamp-2 transition-all duration-300">
                                 Online Station
                             </h2>
                         </div>
@@ -385,7 +394,20 @@
 
                 // Update UI
                 if (trackArtistEl) trackArtistEl.textContent = artist;
-                if (trackTitleEl) trackTitleEl.textContent = title;
+                if (trackTitleEl) {
+                    trackTitleEl.textContent = title;
+                    
+                    // --- SMART RESIZE LOGIC ---
+                    if (artworkImage) {
+                        // Check if title is longer than 40 chars
+                        if (title.length > 40) {
+                            artworkImage.classList.add('art-shrink');
+                        } else {
+                            artworkImage.classList.remove('art-shrink');
+                        }
+                    }
+                }
+                
                 if (artworkImage && artworkImage.src !== artworkUrl) artworkImage.src = artworkUrl;
 
                 // Update Media Session
@@ -406,7 +428,7 @@
             function togglePlay() {
                 if (isPlaying) {
                     player.pause();
-                    player.src = ""; 
+                    player.src = ""; // Clear buffer
                     player.load();
                     
                     isPlaying = false;
@@ -416,6 +438,7 @@
                     
                     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
                 } else {
+                    // Try setting src directly without cache buster first to avoid 404s
                     player.src = urls.stream; 
                     player.load();
                     
@@ -453,7 +476,7 @@
             player.volume = 0.8;
 
             // --- 3. BACKGROUND TASKS ---
-            updateTrackData(); 
+            updateTrackData(); // Call immediately on load
             setInterval(updateTrackData, 10000); 
 
             // --- 4. IMAGE ERROR HANDLING ---
