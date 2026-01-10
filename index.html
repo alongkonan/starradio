@@ -275,32 +275,37 @@
         <div class="col-span-12 lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
             
             <!-- DJ Profile Card -->
-            <div id="dj-card" class="w-full relative rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.2)] group transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] bg-gray-900">
-                <!-- Background Image -->
-                <div class="w-full aspect-[4/5] lg:aspect-[3/4] relative">
-                    <!-- Default Image (will be changed by JS) -->
-                    <!-- Changed object-position to 'top' to ensure head is visible -->
-                    <img id="dj-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="DJ Station" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: top;">
+            <div id="dj-card" class="w-full relative rounded-[24px] lg:rounded-[32px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.2)] group transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] bg-gray-900">
+                
+                <!-- Responsive Wrapper: Flex Row (Mobile) / Block (Desktop) -->
+                <div class="flex flex-row lg:block relative h-full">
                     
-                    <!-- Gradient Overlay -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
-                    
-                    <!-- Status Badge -->
-                    <div class="absolute top-4 right-4 z-10">
-                        <span id="dj-status-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
+                    <!-- Image Container -->
+                    <div class="w-[120px] sm:w-[140px] lg:w-full aspect-[3/4] lg:aspect-[3/4] relative flex-shrink-0">
+                        <!-- Default Image -->
+                        <img id="dj-image" src="https://i.postimg.cc/8cBPtCd1/logo-new.png" alt="DJ Station" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" style="object-position: top;">
+                        
+                        <!-- Gradient Overlay (Desktop Only) -->
+                        <div class="hidden lg:block absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent"></div>
+                        
+                        <!-- Status Badge -->
+                        <div class="absolute top-2 left-2 lg:top-4 lg:right-4 lg:left-auto z-10">
+                            <span id="dj-status-badge" class="text-[10px] lg:text-xs font-bold px-2 py-1 lg:px-3 lg:py-1 rounded-full bg-red-600/90 text-white shadow-lg backdrop-blur-sm animate-pulse border border-white/10">ON AIR</span>
+                        </div>
                     </div>
 
-                    <!-- Content Overlay -->
-                    <div class="absolute bottom-0 left-0 w-full p-6 flex flex-col items-start z-10">
-                        <h3 id="dj-name" class="font-bold text-4xl text-white leading-none tracking-tight mb-2 drop-shadow-lg">STAR RADIO</h3>
+                    <!-- Content Container -->
+                    <!-- Mobile: Side padding. Desktop: Overlay bottom padding -->
+                    <div class="flex-1 p-4 flex flex-col justify-center lg:absolute lg:bottom-0 lg:left-0 lg:w-full lg:p-6 lg:justify-end z-10">
+                        <h3 id="dj-name" class="font-bold text-xl lg:text-4xl text-white leading-tight lg:leading-none tracking-tight mb-1 lg:mb-2 drop-shadow-lg line-clamp-1 lg:line-clamp-none">STAR RADIO</h3>
                         
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white border border-white/10 backdrop-blur-md">HOST</span>
-                            <p id="dj-time" class="text-lg text-purple-300 font-medium tracking-wide drop-shadow-md">Non-stop Hits</p>
+                        <div class="flex flex-wrap items-center gap-2 mb-0 lg:mb-4">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-white/20 text-white border border-white/10 backdrop-blur-md hidden lg:inline-block">HOST</span>
+                            <p id="dj-time" class="text-sm lg:text-lg text-purple-300 font-medium tracking-wide drop-shadow-md">Non-stop Hits</p>
                         </div>
                         
-                        <div class="w-full h-[1px] bg-white/10 mb-3"></div>
-                        <div class="flex items-center justify-end w-full">
+                        <div class="hidden lg:block w-full h-[1px] bg-white/10 mb-3"></div>
+                        <div class="hidden lg:flex items-center justify-end w-full">
                             <img src="https://i.postimg.cc/8cBPtCd1/logo-new.png" class="h-4 w-auto opacity-70">
                         </div>
                     </div>
